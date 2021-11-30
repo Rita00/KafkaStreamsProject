@@ -11,10 +11,10 @@ public class Clients {
 
         Random rand = new Random();
 
+        //Setup properties to produce to both topics
         //Assign Credits and Payments as name topics
         String cTopic = "Credits";
         String pTopic = "Payments";
-
         // create instance for properties to access producer configs
         Properties props = new Properties();
         //Assign localhost id
@@ -32,19 +32,25 @@ public class Clients {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.LongSerializer");
 
+        //Create producer with previous properties
         Producer<String, Long> producer = new KafkaProducer<>(props);
 
-        int i = 0;
-        while(true){
-            float cred = rand.nextFloat() * (10f-1f);
+        float cred, pay;
+        int sleepTime;
+        for(int i = 0; true; i++){
+            sleepTime = rand.nextInt() * (10000 - 5000);
+
+            //Produce random credit
+            cred = rand.nextFloat() * (100f-1f);
             producer.send(new ProducerRecord<String, Long>(cTopic, Float.toString(cred), (long) i));
 
-
-            float pay = rand.nextFloat() * (10f-1f);
+            //Produce random pay
+            pay = rand.nextFloat() * (100f-1f);
             producer.send(new ProducerRecord<String, Long>(pTopic, Float.toString(pay), (long) i));
 
-            Thread.sleep(5000);
-            i++;
+            //Sleep
+            Thread.sleep(sleepTime);
+
         }
 
         //producer.close();
