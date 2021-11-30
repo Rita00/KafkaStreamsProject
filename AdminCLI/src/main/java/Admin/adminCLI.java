@@ -83,20 +83,25 @@ public class adminCLI {
     }
 
     private static void listClients() {
+
     }
 
     private static void listManagers() {
+
     }
 
     private static boolean addCurrency(String currencyName, float exchangeRate) {
+
         return false;
     }
 
     private static boolean addClient(String clientName, String clientPassword) {
+
         return false;
     }
 
     private static boolean addManager(String managerName, String managerPassword) {
+
         return false;
     }
 }
