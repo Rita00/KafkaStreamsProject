@@ -12,16 +12,4 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>ear</artifactId>
     <packaging>ear</packaging>
     <name>ear</name>
-    <dependencies>
-        <dependency>
-            <groupId>IS</groupId>
-            <artifactId>AdminCLI</artifactId>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>IS</groupId>
-            <artifactId>KafkaStreams</artifactId>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
 </project>
