@@ -40,7 +40,6 @@ public class KafkaStreams {
             ConsumerRecords<String, Long> creditRecords = credits.poll(Long.MAX_VALUE);
 
             for (ConsumerRecord<String, Long> record : creditRecords) {
-
                 System.out.println("Cred: " +record.key() + " => " + record.value());
             }
 

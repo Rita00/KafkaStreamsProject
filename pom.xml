@@ -12,8 +12,8 @@
     </modules>
 
     <groupId>IS</groupId>
-    <artifactId>Projeto3_IS</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>IS_Projeto3</artifactId>
+    <version>1</version>
 
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
