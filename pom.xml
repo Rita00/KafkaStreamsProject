@@ -8,9 +8,10 @@
     <modules>
         <module>KafkaStreams</module>
         <module>AdminCLI</module>
+        <module>ear</module>
     </modules>
 
-    <groupId>org.example</groupId>
+    <groupId>IS</groupId>
     <artifactId>Projeto3_IS</artifactId>
     <version>1.0-SNAPSHOT</version>
 
