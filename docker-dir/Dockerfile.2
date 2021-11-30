@@ -46,7 +46,8 @@ ENV PATH="/jaxws-ri/bin/:${PATH}"
 
 ADD https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-jdbc/versions/10.2.5/confluentinc-kafka-connect-jdbc-10.2.5.zip /opt/kafka_2.13-2.8.1/libs
 RUN cd /opt/kafka_2.13-2.8.1/libs && unzip confluentinc-kafka-connect-jdbc-10.2.5.zip && rm confluentinc-kafka-connect-jdbc-10.2.5.zip
-
+RUN mv /opt/kafka_2.13-2.8.1/libs/confluentinc-kafka-connect-jdbc-10.2.5/lib/kafka-connect-jdbc-10.2.5.jar /opt/kafka_2.13-2.8.1/libs
+RUN mv /opt/kafka_2.13-2.8.1/libs/confluentinc-kafka-connect-jdbc-10.2.5/lib/postgresql-42.2.19.jar /opt/kafka_2.13-2.8.1/libs
 
 # the user we're applying this too (otherwise it most likely install for root)
 USER $USER_NAME
@@ -58,10 +59,6 @@ ENV ZSH_THEME robbyrussell
 # run the installation script
 #  RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
 RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-ADD https://jdbc.postgresql.org/download/postgresql-42.2.24.jar /opt/kafka_2.13-2.8.1/libs
-
-
 
 # start zsh
 CMD [ "zsh" ]
