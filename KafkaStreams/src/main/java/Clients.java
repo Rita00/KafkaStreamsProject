@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -8,8 +10,9 @@ import java.util.*;
 
 public class Clients {
 
-    public static  void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         Random rand = new Random();
+        Gson gson = new Gson();
 
         //Setup properties to produce to both topics
         //Assign Credits and Payments as name topics
@@ -66,8 +69,7 @@ public class Clients {
         System.out.println("Number of records fetched from DB: " + clientRecords.count());
         for ( ConsumerRecord<Long, String> record:
              clientRecords) {
-
-            System.out.println(record.value());
+            Client client = gson.fromJson(record.value(), Client.class);
         }
 
         System.out.println("Number of clients: "+ clientIds.size());
@@ -82,17 +84,25 @@ public class Clients {
 
             //Produce random credit
             cred = rand.nextFloat() * (1000f-1f);
+
             //Choose random client to attach to the credit
             index = rand.nextInt(clientIds.size());
             System.out.println(index);
+
+            //Get client Id
             clientId = clientIds.get(index);
             //Produce to topic
             producer.send(new ProducerRecord<Long,  Float>(cTopic, (long) clientId, cred));
 
             //Produce random pay
             pay = rand.nextFloat() * (1000f-1f);
+
             //Choose random client to attach to the credit
-            clientId = clientIds.get(rand.nextInt()*(clientIds.size() - 0));
+            index = rand.nextInt(clientIds.size());
+            System.out.println(index);
+
+            //Choose random client to attach to the credit
+            clientId = clientIds.get(index);
             //Produce to topic
             producer.send(new ProducerRecord<Long, Float>(pTopic,(long) clientId,  pay));
 
