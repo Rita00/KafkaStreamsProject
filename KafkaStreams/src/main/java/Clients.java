@@ -12,7 +12,7 @@ public class Clients {
 
     public static void main(String[] args) throws Exception {
         Random rand = new Random();
-        Gson gson = new Gson();
+        //Gson gson = new Gson();
 
         //Setup properties to produce to both topics
         //Assign Credits and Payments as name topics
@@ -67,12 +67,12 @@ public class Clients {
         System.out.println("Getting clients from "+ dbTopic);
         ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
         System.out.println("Number of records fetched from DB: " + clientRecords.count());
+
         for ( ConsumerRecord<Long, String> record:
              clientRecords) {
-            Client client = gson.fromJson(record.value(), Client.class);
-            if(!clientIds.contains(client.getClient_id())){
-                clientIds.add(client.getClient_id());
-            }
+
+            System.out.println(record.value());
+            System.out.println("\n\n");
         }
 
         System.out.println("Number of clients: "+ clientIds.size());
