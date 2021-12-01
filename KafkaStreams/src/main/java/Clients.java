@@ -3,11 +3,12 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import Entities.Client;
 import java.util.*;
 
 public class Clients {
 
-    public static void main(String[] args) throws Exception {
+    public static  void main(String[] args) throws Exception {
         Random rand = new Random();
 
         //Setup properties to produce to both topics
@@ -35,7 +36,7 @@ public class Clients {
 
         //Setup properties to consume from DBInfoTopics
         //Assign topicName to string variable
-        String topicName = "DBInfoTopics";
+        String dbTopic = "DBInfoTopics";
         // create instance for properties to access producer configs
         Properties props = new Properties();
         //Assign localhost id
@@ -51,24 +52,30 @@ public class Clients {
         //The buffer.memory controls the total amount of memory available to the producer for buffering.
         props.put("buffer.memory", 33554432);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaExampleConsumer");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.LongDeserializer");
-        Consumer<String, Long> consumer = new KafkaConsumer<>(props); consumer.subscribe(Collections.singletonList(topicName));
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.LongDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        Consumer<Long, String> dbConsumer = new KafkaConsumer<>(props);
+        dbConsumer.subscribe(Collections.singletonList(dbTopic));
 
         //List of client ids
-        List<Integer> clientIds = new ArrayList<>();
+        ArrayList<Long> clientIds = new ArrayList<>();
 
         //From each record we only want the client Id
-        System.out.println("Getting clients from "+ topicName);
-        ConsumerRecords<String, Long> clientRecords = consumer.poll(Long.MAX_VALUE);
+        System.out.println("Getting clients from "+ dbTopic);
+        ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
         System.out.println("Number of records fetched from DB: " + clientRecords.count());
-        for ( ConsumerRecord<String, Long> record:
+        for ( ConsumerRecord<Long, String> record:
              clientRecords) {
-            clientIds.add(Math.toIntExact(Long.parseLong(record.key())));
+
+            System.out.println(record.value());
         }
-        
+
+        System.out.println("Number of clients: "+ clientIds.size());
+
         float cred, pay;
-        int sleepTime, clientId;
+        int sleepTime, index;
+        long clientId;
+
         while(true){
             //Set random sleep time
             sleepTime = rand.nextInt() * (7000 - 5000);
@@ -76,7 +83,9 @@ public class Clients {
             //Produce random credit
             cred = rand.nextFloat() * (1000f-1f);
             //Choose random client to attach to the credit
-            clientId = clientIds.get(rand.nextInt()*(clientIds.size() - 0));
+            index = rand.nextInt(clientIds.size());
+            System.out.println(index);
+            clientId = clientIds.get(index);
             //Produce to topic
             producer.send(new ProducerRecord<Long,  Float>(cTopic, (long) clientId, cred));
 
