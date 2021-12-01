@@ -8,7 +8,6 @@ import java.util.*;
 public class Clients {
 
     public static void main(String[] args) throws Exception {
-
         Random rand = new Random();
 
         //Setup properties to produce to both topics
@@ -29,69 +28,68 @@ public class Clients {
         propsProducer.put("linger.ms", 1);
         //The buffer.memory controls the total amount of memory available to the producer for buffering.
         propsProducer.put("buffer.memory", 33554432);
-        propsProducer.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        propsProducer.put("value.serializer", "org.apache.kafka.common.serialization.LongSerializer");
+        propsProducer.put("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
+        propsProducer.put("value.serializer", "org.apache.kafka.common.serialization.FloatSerializer");
         //Create producer with previous properties
-        Producer<String, Long> producer = new KafkaProducer<>(propsProducer);
+        Producer<Long, Float> producer = new KafkaProducer<>(propsProducer);
 
-
+        //Setup properties to consume from DBInfoTopics
+        //Assign topicName to string variable
+        String topicName = "DBInfoTopics";
         // create instance for properties to access producer configs
-        Properties propsConsumer = new Properties();
-        String dbTopic = "DBInfoTopics";
+        Properties props = new Properties();
         //Assign localhost id
-        propsConsumer.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", "localhost:9092");
         //Set acknowledgements for producer requests.
-        propsConsumer.put("acks", "all");
+        props.put("acks", "all");
         //If the request fails, the producer can automatically retry,
-        propsConsumer.put("retries", 0);
+        props.put("retries", 0);
         //Specify buffer size in config
-        propsConsumer.put("batch.size", 16384);
+        props.put("batch.size", 16384);
         //Reduce the no of requests less than 0
-        propsConsumer.put("linger.ms", 1);
+        props.put("linger.ms", 1);
         //The buffer.memory controls the total amount of memory available to the producer for buffering.
-        propsConsumer.put("buffer.memory", 33554432);
-        propsConsumer.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaExampleConsumer");
-        propsConsumer.put("key.deserializer",
-                "org.apache.kafka.common.serialization.StringDeserializer");
-        propsConsumer.put("value.deserializer",
-                "org.apache.kafka.common.serialization.LongDeserializer");
+        props.put("buffer.memory", 33554432);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaExampleConsumer");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.LongDeserializer");
+        Consumer<String, Long> consumer = new KafkaConsumer<>(props); consumer.subscribe(Collections.singletonList(topicName));
 
-        Consumer<String, Long> clients = new KafkaConsumer<>(propsConsumer);
-
-        clients.subscribe(Collections.singletonList(dbTopic));
-        ConsumerRecords<String, Long> clientRecords = clients.poll(Long.MAX_VALUE);
-
+        //List of client ids
         List<Integer> clientIds = new ArrayList<>();
 
+        //From each record we only want the client Id
+        System.out.println("Getting clients from "+ topicName);
+        ConsumerRecords<String, Long> clientRecords = consumer.poll(Long.MAX_VALUE);
+        System.out.println("Number of records fetched from DB: " + clientRecords.count());
         for ( ConsumerRecord<String, Long> record:
              clientRecords) {
-            clientIds.add(Integer.parseInt(record.key()));
+            clientIds.add(Math.toIntExact(Long.parseLong(record.key())));
         }
         
         float cred, pay;
         int sleepTime, clientId;
-        for(int i = 0; true; i++){
+        while(true){
             //Set random sleep time
-            sleepTime = rand.nextInt() * (10000 - 5000);
+            sleepTime = rand.nextInt() * (7000 - 5000);
 
             //Produce random credit
-            cred = rand.nextFloat() * (100f-1f);
+            cred = rand.nextFloat() * (1000f-1f);
             //Choose random client to attach to the credit
             clientId = clientIds.get(rand.nextInt()*(clientIds.size() - 0));
             //Produce to topic
-            producer.send(new ProducerRecord<String, Long>(cTopic, Float.toString(cred), (long) clientId));
+            producer.send(new ProducerRecord<Long,  Float>(cTopic, (long) clientId, cred));
 
             //Produce random pay
-            pay = rand.nextFloat() * (100f-1f);
+            pay = rand.nextFloat() * (1000f-1f);
             //Choose random client to attach to the credit
             clientId = clientIds.get(rand.nextInt()*(clientIds.size() - 0));
             //Produce to topic
-            producer.send(new ProducerRecord<String, Long>(pTopic, Float.toString(pay), (long) clientId));
+            producer.send(new ProducerRecord<Long, Float>(pTopic,(long) clientId,  pay));
 
             //Sleep
             Thread.sleep(sleepTime);
         }
-
         //producer.close();
     }
 }
