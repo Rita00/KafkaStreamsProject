@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import Entities.Client;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -68,60 +69,61 @@ public class Clients {
         //List of client ids
         ArrayList<Long> clientIds = new ArrayList<>();
 
-        //From each record we only want the client Id
-        System.out.println("Getting clients from "+ dbTopic);
-        ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
-        System.out.println("Number of records fetched from DB: " + clientRecords.count());
-
-
-        for ( ConsumerRecord<Long, String> record:
-             clientRecords) {
-
-            Client client = gson.fromJson(record.value(), Client.class);
-
-            System.out.println(client.getClient_name());
-
-            if(!clientIds.contains(client.getClient_id())){
-                clientIds.add(client.getClient_id());
-            }
-        }
-
-        System.out.println("Number of clients: "+ clientIds.size());
-
         float cred, pay;
         int sleepTime, index;
         long clientId;
 
-        while(true){
-            //Set random sleep time
-            sleepTime = rand.nextInt() * (7000 - 5000);
+        while (true) {
+            //From each record we only want the client Id
+            System.out.println("Getting clients from " + dbTopic);
+            ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
+            System.out.println("Number of records fetched from DB: " + clientRecords.count());
 
-            //Produce random credit
-            cred = rand.nextFloat() * (1000f-1f);
+            for (int i = 0; i < 3; i++) {
+                for (ConsumerRecord<Long, String> record : clientRecords) {
+                    JSONObject json = new JSONObject(record.value());
+                    Client client = gson.fromJson(json.get("payload").toString(), Client.class);
 
-            //Choose random client to attach to the credit
-            index = rand.nextInt(clientIds.size());
-            System.out.println(index);
+                    if (!clientIds.contains(client.getClient_id())) {
+                        clientIds.add(client.getClient_id());
+                        System.out.println(json.get("payload"));
+                        System.out.println(client.getClient_name());
+                    }
+                }
 
-            //Get client Id
-            clientId = clientIds.get(index);
-            //Produce to topic
-            producer.send(new ProducerRecord<Long,  Float>(cTopic, (long) clientId, cred));
+                System.out.println("Number of clients: " + clientIds.size());
+                //Produce random credit
+                cred = rand.nextFloat() * (1000f - 1f);
 
-            //Produce random pay
-            pay = rand.nextFloat() * (1000f-1f);
+                //Choose random client to attach to the credit
+                index = rand.nextInt(clientIds.size());
+//            System.out.println(index);
 
-            //Choose random client to attach to the credit
-            index = rand.nextInt(clientIds.size());
-            System.out.println(index);
+                //Get client Id
+                clientId = clientIds.get(index);
 
-            //Choose random client to attach to the credit
-            clientId = clientIds.get(index);
-            //Produce to topic
-            producer.send(new ProducerRecord<Long, Float>(pTopic,(long) clientId,  pay));
+                //Produce to topic
+                producer.send(new ProducerRecord<Long, Float>(cTopic, (long) clientId, cred));
 
-            //Sleep
-            Thread.sleep(sleepTime);
+                System.out.println("Client " + clientId + " made a credit of " + cred + "euros.");
+
+                //Produce random pay
+                pay = rand.nextFloat() * (1000f - 1f);
+
+                //Choose random client to attach to the credit
+                index = rand.nextInt(clientIds.size());
+//            System.out.println(index);
+
+                //Choose random client to attach to the credit
+                clientId = clientIds.get(index);
+                //Produce to topic
+                producer.send(new ProducerRecord<Long, Float>(pTopic, (long) clientId, pay));
+
+                System.out.println("Client " + clientId + " made a payment of " + pay + "euros.");
+
+                //Sleep
+                Thread.sleep(5000);
+            }
         }
         //producer.close();
     }

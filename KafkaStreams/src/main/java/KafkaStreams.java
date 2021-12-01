@@ -64,7 +64,7 @@ public class KafkaStreams {
         Consumer<String, Float> dbConsumer = new KafkaConsumer<>(propsDBConsumer);
         //Set each consumer to their topic
         cConsumer.subscribe(Collections.singletonList(cTopic));
-        pConsumer.subscribe(Collections.singletonList(pTopic));
+        cConsumer.subscribe(Collections.singletonList(pTopic));
         dbConsumer.subscribe(Collections.singletonList(dbTopic));
 
         //Setup properties to produce results to ResultsTopics
@@ -92,42 +92,41 @@ public class KafkaStreams {
         StreamsBuilder builder = new StreamsBuilder();
 
         //Get list of currencies from DBInfoTopics
-        System.out.println("Getting clients from "+ dbTopic);
-        ConsumerRecords<String, Float> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
-        System.out.println("Number of records fetched from DB: " + clientRecords.count());
-        List<String> currencyList = new ArrayList<String>();
-        for ( ConsumerRecord<String, Float> record:
-                clientRecords) {
-            currencyList.add(record.key());
-        }
+//        System.out.println("Getting clients from "+ dbTopic);
+//        ConsumerRecords<String, Float> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
+//        System.out.println("Number of records fetched from DB: " + clientRecords.count());
+//        List<String> currencyList = new ArrayList<String>();
+//        for ( ConsumerRecord<String, Float> record:
+//                clientRecords) {
+//            currencyList.add(record.key());
+//        }
 
         //Consume while there are resources to consume
         while (true) {
             //Get records from Credits topic
             ConsumerRecords<Long, Float> creditRecords = cConsumer.poll(Long.MAX_VALUE);
-
             for (ConsumerRecord<Long, Float> record : creditRecords) {
                 System.out.println("Client " +record.key() + " made a credit of " + record.value() + "euros.");
 
                 //Outputs a stream to ResultsTopic with key:clientId and value:count of credits
-                KStream<Long, Long> lines = builder.stream(cTopic);
-                KTable<Long, Long> outlines = lines.
-                        groupByKey().count();
-                outlines.toStream().to(rTopic);
+//                KStream<Long, Long> lines = builder.stream(cTopic);
+//                KTable<Long, Long> outlines = lines.
+//                        groupByKey().count();
+//                outlines.toStream().to(rTopic);
             }
 
             //Get records from Payments topic
-            ConsumerRecords<Long, Float> paymentRecords = pConsumer.poll(Long.MAX_VALUE);
-            for (ConsumerRecord<Long, Float> record : paymentRecords) {
-                System.out.println("Client " +record.key() + " made a payment of " + record.value() + "euros.");
-
-                //Outputs a stream to ResultsTopic with key:clientId and value:count of credits
-                KStream<Long, Long> lines = builder.stream(pTopic);
-                KTable<Long, Long> outlines = lines.
-                        groupByKey().count();
-                outlines.toStream().to(rTopic);
-
-            }
+//            ConsumerRecords<Long, Float> paymentRecords = cConsumer.poll(Long.MAX_VALUE);
+//            for (ConsumerRecord<Long, Float> record : paymentRecords) {
+//                System.out.println("Client " +record.key() + " made a payment of " + record.value() + "euros.");
+//
+//                //Outputs a stream to ResultsTopic with key:clientId and value:count of credits
+////                KStream<Long, Long> lines = builder.stream(pTopic);
+////                KTable<Long, Long> outlines = lines.
+////                        groupByKey().count();
+////                outlines.toStream().to(rTopic);
+//
+//            }
         }
 
         //cConsumer.close();

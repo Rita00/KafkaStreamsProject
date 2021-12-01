@@ -15,7 +15,13 @@
     <groupId>IS</groupId>
     <artifactId>IS_Projeto3</artifactId>
     <version>1</version>
+
     <dependencies>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
