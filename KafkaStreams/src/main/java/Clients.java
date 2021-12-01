@@ -70,6 +70,9 @@ public class Clients {
         for ( ConsumerRecord<Long, String> record:
              clientRecords) {
             Client client = gson.fromJson(record.value(), Client.class);
+            if(!clientIds.contains(client.getClient_id())){
+                clientIds.add(client.getClient_id());
+            }
         }
 
         System.out.println("Number of clients: "+ clientIds.size());
