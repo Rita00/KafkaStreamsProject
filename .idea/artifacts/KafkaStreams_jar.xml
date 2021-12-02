@@ -3,10 +3,10 @@
     <output-path>$PROJECT_DIR$/out/artifacts/KafkaStreams_jar</output-path>
     <root id="archive" name="Projeto3_IS.jar">
       <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/KafkaStreams/src/main/java/META-INF/KafkaStreams/META-INF/MANIFEST.MF" />
+        <element id="file-copy" path="$PROJECT_DIR$/SolveApp/src/main/java/META-INF/KafkaStreams/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="AdminCLI" />
-      <element id="module-output" name="KafkaStreams" />
+      <element id="module-output" name="SolveApp" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/rocksdb/rocksdbjni/5.18.4/rocksdbjni-5.18.4.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/kafka/connect-api/2.8.0/connect-api-2.8.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.12.3/jackson-core-2.12.3.jar" path-in-jar="/" />
