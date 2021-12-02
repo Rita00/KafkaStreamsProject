@@ -18,3 +18,5 @@ insert into client (client_id, client_name)
 values (9, 'Raul');
 insert into client (client_id, client_name)
 values (10, 'Leandro');
+insert into client (client_id, client_name)
+values (11, 'Bruno');
