@@ -6,7 +6,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>KafkaStreams</module>
+        <module>SolveApp</module>
         <module>Clients</module>
         <module>AdminCLI</module>
         <module>ear</module>
