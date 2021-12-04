@@ -134,6 +134,7 @@
     </build>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
         <wildfly-plugin-version>2.1.0.Beta1</wildfly-plugin-version>

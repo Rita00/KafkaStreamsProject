@@ -12,4 +12,29 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>ear</artifactId>
     <packaging>ear</packaging>
     <name>ear</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>IS</groupId>
+            <artifactId>SolveApp</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>IS</groupId>
+            <artifactId>Clients</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>IS</groupId>
+            <artifactId>REST</artifactId>
+            <type>war</type>
+            <version>1</version>
+        </dependency>
+        <dependency>
+            <groupId>IS</groupId>
+            <artifactId>AdminCLI</artifactId>
+            <version>1</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 </project>

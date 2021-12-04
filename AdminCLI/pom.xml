@@ -7,7 +7,6 @@
   <groupId>IS</groupId>
   <artifactId>AdminCLI</artifactId>
   <version>1</version>
-  <packaging>jar</packaging>
 
   <name>AdminCLI</name>
   <description>A simple AdminCLI.</description>

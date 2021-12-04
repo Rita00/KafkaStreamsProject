@@ -3,6 +3,8 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/AdminCLI/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Clients/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/REST/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/REST/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SolveApp/src/main/java" charset="UTF-8" />
   </component>
 </project>
