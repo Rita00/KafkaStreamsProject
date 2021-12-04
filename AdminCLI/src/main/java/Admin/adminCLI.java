@@ -45,9 +45,9 @@ public class adminCLI {
                         System.out.flush();
                         System.out.printf("\tInsert client name:");
                         String clientName = sc.nextLine();
-                        System.out.printf("\tInsert client password:");
-                        String clientPassword = sc.nextLine();
-                        if(addClient(clientName, clientPassword)){
+//                        System.out.printf("\tInsert client password:");
+//                        String clientPassword = sc.nextLine();
+                        if(addClient(clientName)){
                             System.out.println("Client added successfully");
                         }
                         break;
@@ -95,7 +95,7 @@ public class adminCLI {
         return false;
     }
 
-    private static boolean addClient(String clientName, String clientPassword) {
+    private static boolean addClient(String clientName) {
 
         return false;
     }
