@@ -25,8 +25,8 @@ public class SolveApp {
         //Set topic names
         String cTopic = "Credits";
         String pTopic = "Payments";
-        String dbTopic = "DBInfoTopics";
-        String rTopic = "ResultsTopics";
+        String dbTopic = "DBInfoClients";
+        String rTopic = "ResultsTopic";
 
         //Instantiate new stream builder
         StreamsBuilder builder = new StreamsBuilder();
@@ -61,6 +61,7 @@ public class SolveApp {
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
         while(true);
+
 //        System.out.println("Starting streams reading from topic " + cTopic);
 //        Thread.sleep(30000);
 //        streams.close();

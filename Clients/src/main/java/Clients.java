@@ -104,7 +104,7 @@ public class Clients {
 
                 //Produce to credits topic
                 producer.send(new ProducerRecord<Long, Float>(cTopic, (long) clientId, cred));
-                System.out.println("Client " + clientId + " made a credit of " + cred + "euros.");
+                System.out.println("Client " + clientId + " made a credit of " + cred + " euros.");
 
                 //Produce random pay
                 pay = rand.nextFloat() * (1000f - 1f);
@@ -114,7 +114,7 @@ public class Clients {
 
                 //Produce to payments topic
                 producer.send(new ProducerRecord<Long, Float>(pTopic, (long) clientId, pay));
-                System.out.println("Client " + clientId + " made a payment of " + pay + "euros.");
+                System.out.println("Client " + clientId + " made a payment of " + pay + " euros.");
 
                 //Sleep
                 Thread.sleep(sleepTime);
