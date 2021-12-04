@@ -25,8 +25,8 @@ public class SolveApp {
         //Set topic names
         String cTopic = "Credits";
         String pTopic = "Payments";
-        String dbTopic = "DBInfoClients";
-        String rTopic = "ResultsTopic";
+        String dbTopic = "DBInfoTopics";
+        String rTopic = "ResultsTopics";
 
         //Instantiate new stream builder
         StreamsBuilder builder = new StreamsBuilder();
@@ -54,14 +54,19 @@ public class SolveApp {
         //Read from payments topic and sum all payments for each user
 //            KTable<Long, Float> paymentLines = paymentsStream.groupByKey().reduce((oldval, newval) -> oldval + newval, Materialized.as("tablename"));
 
-        creditsStream.peek((key, value) -> System.out.println("Client " + key + " has made " + value + " euros in credits."));
+//        creditsStream.peek((key, value) -> System.out.println("Client " + key + " has made " + value + " euros in credits."));
+//        paymentsStream.peek((key, value) -> System.out.println("Client " + key + " has made " + value + " euros in payments."));
 
-        paymentsStream.peek((key, value) -> System.out.println("Client " + key + " has made " + value + " euros in payments."))/*.to(rTopic)*/;
+        KStream<Long, Float> lines = builder.stream("Credits");
+
+        KTable<Long, Long> outlines = lines.groupByKey().count();
+
+        outlines.mapValues((k, v) -> k + " => " + v).toStream().to("Results", Produced.with(Serdes.Long(), Serdes.String()));
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
-        while(true);
 
+        while(true);
 //        System.out.println("Starting streams reading from topic " + cTopic);
 //        Thread.sleep(30000);
 //        streams.close();
