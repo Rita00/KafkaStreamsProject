@@ -1,0 +1,5 @@
+RestOperations.class
+ApplicationConfig.class
+Entities\Manager.class
+Entities\Client.class
+Entities\Currency.class
