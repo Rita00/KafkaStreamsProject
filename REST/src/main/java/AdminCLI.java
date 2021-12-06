@@ -56,9 +56,9 @@ public class AdminCLI {
                     case 3:
                         System.out.print("\033[H\033[2J");
                         System.out.flush();
-                        System.out.printf("\tInsert currency name:");
+                        System.out.println("\tInsert currency name:");
                         String currencyName = sc.nextLine();
-                        System.out.printf("\tInsert currency exchange rate:");
+                        System.out.println("\tInsert currency exchange rate:");
                         float exchangeRate = sc.nextFloat();
                         if(restOp.AddCurrency(currencyName, exchangeRate)){
                             System.out.println("Currency added successfully");

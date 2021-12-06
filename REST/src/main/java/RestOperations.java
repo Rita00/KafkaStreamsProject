@@ -15,7 +15,7 @@ import java.util.List;
 @Path("/RestOperations")
 @Produces(MediaType.APPLICATION_JSON)
 public class RestOperations {
-    @PersistenceContext(unitName = "school")
+    @PersistenceContext(name = "school")
     EntityManager em;
 
     @POST
@@ -47,6 +47,7 @@ public class RestOperations {
     @POST
     @Path("/addCurrency")
     public boolean AddCurrency(String name, Float exchangeRate) {
+        System.out.println("Name: " + name + "\tExchangeRate: " + exchangeRate);
         try{
             Currency c = new Currency(name, exchangeRate);
             em.persist(c);
