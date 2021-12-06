@@ -1,4 +1,3 @@
-package pt.uc.dei;
 //import Entities.Client;
 //import Entities.Currency;
 //import Entities.Manager;
