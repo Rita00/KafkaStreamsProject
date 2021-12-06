@@ -25,19 +25,21 @@ public class Streams {
         String dbTopic = "DBInfoTopics";
         String rTopic = "ResultsTopics";
 
+        //Set properties
         java.util.Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "exercises-application");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Long().getClass());
 
-        System.out.println("Starting stream...");
+        System.out.println("Creating streams...");
 
         StreamsBuilder builder = new StreamsBuilder();
 
         KStream<String,Long> creditsStream = builder.stream(cTopic, Consumed.with(Serdes.String(), Serdes.Long()));
         KStream<Long, Float> paymentsStream = builder.stream(pTopic, Consumed.with(Serdes.Long(), Serdes.Float()));
         KStream<Long, String> clientsStream = builder.stream(dbTopic, Consumed.with(Serdes.Long(), Serdes.String()));
+
         System.out.println("Created KStreams...");
 
         KStream<String, Long> lines = builder.stream(cTopic);

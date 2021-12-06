@@ -2,103 +2,141 @@ import Entities.Client;
 import Entities.Currency;
 import Entities.Manager;
 
+import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class AdminCLI {
 
+    public static void printMenu(String menuHeader, String menuOptions[], boolean isMessage) {
+        //Clear screen
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
 
-    public static void main(String[]args){
+        System.out.println("\t\t" + menuHeader);
+
+        for (String opt : menuOptions) {
+            System.out.println(opt);
+        }
+
+        if (!isMessage) {
+            System.out.print("Choose an option: ");
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException, IOException {
 
         RestOperations restOp = new RestOperations();
-        Scanner sc = new Scanner(System.in);
+        Scanner input = new Scanner(System.in);
+
+        String mainOptions[] = {
+                "1 - Add Manager",
+                "2 - Add Client",
+                "3 - Add Currency",
+                "4 - List Managers",
+                "5 - List Clients",
+                "6 - List Currencies",
+                "7 - Exit"
+        };
+
+        String header = "Administration Menu";
 
         int opt;
+        while (true){
+            printMenu(header, mainOptions, false);
 
-        while(true){
-            System.out.println("Welcome, Admin");
-            System.out.println("\tOptions:");
-            System.out.println("\t\t[1] - Add a Manager");
-            System.out.println("\t\t[2] - Add a Client");
-            System.out.println("\t\t[3] - Add a Currency");
-            System.out.println("\t\t[4] - List Managers");
-            System.out.println("\t\t[5] - List Clients");
-            System.out.println("\t\t[6] - List Currencies");
-            System.out.println("\tChoose an option: ");
+            opt = input.nextInt();
+            input.nextLine();
 
-            try {
-                opt = sc.nextInt();
+            switch(opt){
+                case 1:
+                    String addManagerOptions[] = {
+                        "Insert manager name: "
+                    };
 
-                if(opt > 6 || opt < 1){
-                    System.out.println("Option invalid please use a number from 1 to 6");
-                    continue;
-                }
+                    printMenu(header, addManagerOptions , true);
+                    String managerName = input.nextLine();
 
-                switch (opt){
-                    case 1:
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        System.out.printf("\tInsert manager name:");
-                        String managerName = sc.nextLine();
-                        if(restOp.AddManager(managerName)){
-                            System.out.println("Manager added successfully");
-                        }
-                        break;
-                    case 2:
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        System.out.printf("\tInsert client name:");
-                        String clientName = sc.nextLine();
-                        if(restOp.AddClient(clientName)){
-                            System.out.println("Client added successfully");
-                        }
-                        break;
-                    case 3:
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        System.out.println("\tInsert currency name:");
-                        String currencyName = sc.nextLine();
-                        System.out.println("\tInsert currency exchange rate:");
-                        float exchangeRate = sc.nextFloat();
-                        if(restOp.AddCurrency(currencyName, exchangeRate)){
-                            System.out.println("Currency added successfully");
-                        }
-                        break;
-                    case 4:
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        System.out.println("\tList of managers: ");
-                        List<Manager> mngrs = restOp.ListManagers();
-                        for (Manager mngr:
-                             mngrs) {
-                            System.out.println("Name: " + mngr.getName());
-                        }
-                        break;
-                    case 5:
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        System.out.println("\tList of clients: ");
-                        List<Client> clnts = restOp.ListClients();
-                        for (Client clnt:
-                                clnts) {
-                            System.out.println("Name: " + clnt.getName());
-                        }
-                        break;
-                    case 6:
-                        System.out.print("\033[H\033[2J");
-                        System.out.flush();
-                        System.out.println("\tList of currencies: ");
-                        List<Currency> crrncs = restOp.ListCurrencies();
-                        for (Currency crrnc:
-                                crrncs) {
-                            System.out.println("Name: " + crrnc.getName() + "| Exchange rate: " + crrnc.getExchangeRate());
-                        }
-                        break;
-                }
+                    if(restOp.AddManager(managerName)){
+                        String addManagerMessages[] = {
+                                "Manager " + managerName + " added successfully!",
+                                "Press enter to proceed..."
+                        };
+
+                        printMenu(header, addManagerMessages, true);
+                        System.in.read();
+                    }else{
+                        String addManagerMessages[] = {
+                                "Something went wrong while adding manager " + managerName,
+                                "Press enter to proceed..."
+                        };
+
+                        printMenu(header, addManagerMessages, true);
+                        System.in.read();
+                    }
+                    break;
+                case 2:
+                    String addClientOptions[] = {
+                            "Insert client name: "
+                    };
+
+                    printMenu(header, addClientOptions , true);
+                    String clientName = input.nextLine();
+
+                    if(restOp.AddClient(clientName)){
+                        String addClientMessages[] = {
+                                "Client " + clientName + " added successfully!",
+                                "Press enter to proceed..."
+                        };
+
+                        printMenu(header, addClientMessages, true);
+                        System.in.read();
+                    }else{
+                        String addClientMessages[] = {
+                                "Something went wrong while adding client " + clientName,
+                                "Press enter to proceed..."
+                        };
+
+                        printMenu(header, addClientMessages, true);
+                        System.in.read();
+                    }
+                    break;
+
+                case 3:
+                    String addCurrencyOptions[] = {
+                            "Insert currency name",
+                            "and exchange rate (should be float)",
+                            "separated by a single space"
+                    };
+
+                    printMenu(header, addCurrencyOptions , true);
+                    String info = input.nextLine();
+
+                    String currencyName = info.split(" ")[0];
+                    Float exchangeRate = Float.parseFloat(info.split(" ")[1]);
+
+                    if(restOp.AddCurrency(currencyName, exchangeRate)){
+                        String addCurrencyMessages[] = {
+                                "Currency " + currencyName + " with exchange rate " + exchangeRate + " added successfully!",
+                                "Press enter to proceed..."
+                        };
+
+                        printMenu(header, addCurrencyMessages, true);
+                        System.in.read();
+                    }else{
+                        String addCurrencyMessages[] = {
+                                "Something went wrong while adding currency " + currencyName + " with exchange rate " + exchangeRate,
+                                "Press enter to proceed..."
+                        };
+
+                        printMenu(header, addCurrencyMessages, true);
+                        System.in.read();
+                    }
+                    break;
             }
-            catch (NumberFormatException e) {
-                System.out.println("Input String cannot be parsed to Integer.");
-            }
+            Thread.sleep(250);
         }
+
     }
 }
