@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AdminCLI/AdminCLI.iml" filepath="$PROJECT_DIR$/AdminCLI/AdminCLI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Projeto3_IS.iml" filepath="$PROJECT_DIR$/Projeto3_IS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SolveApp/SolveApp.iml" filepath="$PROJECT_DIR$/SolveApp/SolveApp.iml" />
+    </modules>
+  </component>
+</project>

@@ -16,7 +16,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <dependencies>
         <dependency>
             <groupId>IS</groupId>
-            <artifactId>SolveApp</artifactId>
+            <artifactId>Streams</artifactId>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -29,12 +29,6 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
             <artifactId>REST</artifactId>
             <type>war</type>
             <version>1</version>
-        </dependency>
-        <dependency>
-            <groupId>IS</groupId>
-            <artifactId>AdminCLI</artifactId>
-            <version>1</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
