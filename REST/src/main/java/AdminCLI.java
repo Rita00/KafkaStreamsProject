@@ -1,12 +1,18 @@
-package Admin;
+import Entities.Client;
+import Entities.Currency;
+import Entities.Manager;
 
+import java.util.List;
 import java.util.Scanner;
 
-public class adminCLI {
+public class AdminCLI {
+
 
     public static void main(String[]args){
 
+        RestOperations restOp = new RestOperations();
         Scanner sc = new Scanner(System.in);
+
         int opt;
 
         while(true){
@@ -34,9 +40,7 @@ public class adminCLI {
                         System.out.flush();
                         System.out.printf("\tInsert manager name:");
                         String managerName = sc.nextLine();
-                        System.out.printf("\tInsert manager password:");
-                        String managerPassword = sc.nextLine();
-                        if(addManager(managerName, managerPassword)){
+                        if(restOp.AddManager(managerName)){
                             System.out.println("Manager added successfully");
                         }
                         break;
@@ -45,9 +49,7 @@ public class adminCLI {
                         System.out.flush();
                         System.out.printf("\tInsert client name:");
                         String clientName = sc.nextLine();
-//                        System.out.printf("\tInsert client password:");
-//                        String clientPassword = sc.nextLine();
-                        if(addClient(clientName)){
+                        if(restOp.AddClient(clientName)){
                             System.out.println("Client added successfully");
                         }
                         break;
@@ -58,18 +60,39 @@ public class adminCLI {
                         String currencyName = sc.nextLine();
                         System.out.printf("\tInsert currency exchange rate:");
                         float exchangeRate = sc.nextFloat();
-                        if(addCurrency(currencyName, exchangeRate)){
+                        if(restOp.AddCurrency(currencyName, exchangeRate)){
                             System.out.println("Currency added successfully");
                         }
                         break;
                     case 4:
-                        listManagers();
+                        System.out.print("\033[H\033[2J");
+                        System.out.flush();
+                        System.out.println("\tList of managers: ");
+                        List<Manager> mngrs = restOp.ListManagers();
+                        for (Manager mngr:
+                             mngrs) {
+                            System.out.println("Name: " + mngr.getName());
+                        }
                         break;
                     case 5:
-                        listClients();
+                        System.out.print("\033[H\033[2J");
+                        System.out.flush();
+                        System.out.println("\tList of clients: ");
+                        List<Client> clnts = restOp.ListClients();
+                        for (Client clnt:
+                                clnts) {
+                            System.out.println("Name: " + clnt.getName());
+                        }
                         break;
                     case 6:
-                        listCurrencies();
+                        System.out.print("\033[H\033[2J");
+                        System.out.flush();
+                        System.out.println("\tList of currencies: ");
+                        List<Currency> crrncs = restOp.ListCurrencies();
+                        for (Currency crrnc:
+                                crrncs) {
+                            System.out.println("Name: " + crrnc.getName() + "| Exchange rate: " + crrnc.getExchangeRate());
+                        }
                         break;
                 }
             }
@@ -77,31 +100,5 @@ public class adminCLI {
                 System.out.println("Input String cannot be parsed to Integer.");
             }
         }
-    }
-
-    private static void listCurrencies() {
-    }
-
-    private static void listClients() {
-
-    }
-
-    private static void listManagers() {
-
-    }
-
-    private static boolean addCurrency(String currencyName, float exchangeRate) {
-
-        return false;
-    }
-
-    private static boolean addClient(String clientName) {
-
-        return false;
-    }
-
-    private static boolean addManager(String managerName, String managerPassword) {
-
-        return false;
     }
 }

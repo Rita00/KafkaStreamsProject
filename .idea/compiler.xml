@@ -8,10 +8,12 @@
         <outputRelativeToContentRoot value="true" />
         <module name="REST" />
         <module name="Clients" />
-        <module name="SolveApp" />
-        <module name="AdminCLI" />
+        <module name="Streams" />
         <module name="ear" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="AdminCLI" target="15" />
+    </bytecodeTargetLevel>
   </component>
 </project>

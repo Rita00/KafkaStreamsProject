@@ -9,9 +9,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>SolveApp</module>
+        <module>Streams</module>
         <module>Clients</module>
-        <module>AdminCLI</module>
         <module>ear</module>
         <module>REST</module>
     </modules>
@@ -20,13 +19,7 @@
         <dependencies>
             <dependency>
                 <groupId>IS</groupId>
-                <artifactId>AdminCLI</artifactId>
-                <version>1</version>
-                <type>jar</type>
-            </dependency>
-            <dependency>
-                <groupId>IS</groupId>
-                <artifactId>SolveApp</artifactId>
+                <artifactId>Streams</artifactId>
                 <version>1</version>
                 <type>jar</type>
             </dependency>
