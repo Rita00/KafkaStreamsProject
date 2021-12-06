@@ -6,12 +6,12 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.*;
 import java.util.List;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
 
 @Stateless
 @Path("/RestOperations")
@@ -22,16 +22,19 @@ public class RestOperations {
 
     @GET
     @Path("/addClients")
-    public boolean AddClient(String name) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response AddClient(String name) {
+        Client c = null;
         try{
-            Client c = new Client(name);
+            c = new Client(name);
             em.persist(c);
         }catch (Exception e){
             e.printStackTrace();
-            return false;
+            return Response.status(500).build();
         }
-        return true;
+        return Response.status(Status.OK).entity(c).build();
     }
+
 
     @GET
     @Path("/addManager")
