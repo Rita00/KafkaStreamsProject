@@ -2,6 +2,7 @@ import Entities.Client;
 import Entities.Currency;
 import Entities.Manager;
 
+import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -12,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+@Stateless
 @Path("/RestOperations")
 @Produces(MediaType.APPLICATION_JSON)
 public class RestOperations {
