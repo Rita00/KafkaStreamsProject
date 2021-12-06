@@ -20,7 +20,7 @@ public class RestOperations {
     @PersistenceContext(name = "school")
     EntityManager em;
 
-    @POST
+    @GET
     @Path("/addClients")
     public boolean AddClient(String name) {
         try{
@@ -33,7 +33,7 @@ public class RestOperations {
         return true;
     }
 
-    @POST
+    @GET
     @Path("/addManager")
     public boolean AddManager(String name) {
         try{
@@ -46,7 +46,7 @@ public class RestOperations {
         return true;
     }
 
-    @POST
+    @GET
     @Path("/addCurrency")
     public boolean AddCurrency(String name, Float exchangeRate) {
         System.out.println("Name: " + name + "\tExchangeRate: " + exchangeRate);
