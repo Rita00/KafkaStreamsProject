@@ -86,9 +86,12 @@ public class Clients {
                     JSONObject json = new JSONObject(record.value());
                     //Instantiate client from payload part of json object
                     //Which contains all the relevant data
+                    //System.out.println(json);
+                    //System.out.println(record.value());
+                    System.out.println(json.get("payload").toString());
                     Client client = gson.fromJson(json.get("payload").toString(), Client.class);
                     //If client is not already in the pool
-                    System.out.println(client.getClient_name());
+                    //System.out.println(client.getClient_name());
                     if (!clientIds.contains(client.getClient_id())) {
                         //Add client to the pool
                         clientIds.add(client.getClient_id());

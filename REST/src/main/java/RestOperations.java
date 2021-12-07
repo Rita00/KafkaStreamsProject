@@ -43,16 +43,14 @@ public class RestOperations {
 
     @POST
     @Path("/addManager")
-    public Response AddManager(String name) {
-        Manager mn = null;
+    public Response AddManager(Manager m) {
         try {
-            mn = new Manager(name);
-            em.persist(mn);
+            em.persist(m);
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(500).build();
         }
-        return Response.status(Status.OK).entity(mn).build();
+        return Response.status(Status.OK).entity(m).build();
     }
 
     @POST
@@ -86,19 +84,20 @@ public class RestOperations {
     @GET
     @Path("/listManagers")
     public Map<Integer, String> ListManagers(){
-        Map<Integer, String> allManagersInfo = null;
+        Map<Integer, String> allManagersInfo = new HashMap<>();
         try
         {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
             List<Manager> allManagers = managers.getResultList();
             for (Manager m : allManagers) {
-                System.out.println("\n\n\n\nID: " + m.getId() + "\n\n\n\n");
+                System.out.println("\n\n\n\nID: " + m.getId() + "\n\n\n\n" + m.getName());
                 allManagersInfo.put(m.getId(), m.getName());
             }
+            System.out.println(allManagersInfo);
             return allManagersInfo;
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
+            return  null;
         }
     }
 

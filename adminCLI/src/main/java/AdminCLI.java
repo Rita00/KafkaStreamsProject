@@ -2,6 +2,8 @@
 //import Entities.Currency;
 //import Entities.Manager;
 
+import data.Manager;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -11,9 +13,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class AdminCLI {
 
@@ -32,7 +32,6 @@ public class AdminCLI {
             System.out.print("Choose an option: ");
         }
     }
-
 
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -70,7 +69,8 @@ public class AdminCLI {
 
                     printMenu(header, addManagerOptions, true);
                     String managerName = input.nextLine();
-                    Entity<String> inputManager = Entity.entity(managerName, MediaType.APPLICATION_JSON);
+                    Manager m = new Manager(managerName);
+                    Entity<Manager> inputManager = Entity.entity(m, MediaType.APPLICATION_JSON);
                     Response response = target.request().post(inputManager);
                     String value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);
@@ -110,25 +110,31 @@ public class AdminCLI {
 
                     String addClientOptions2[] = {
                             "Please choose a manager: "
-                   };
+                    };
 
 
                     Response managers = get.request().get();
-                    Map<Integer, String> managerNames = (Map<Integer, String>) managers.readEntity(new GenericType<Map<Integer, String>>() { });
+                    Map<Integer, String> managerNames = managers.readEntity(new GenericType<Map<Integer, String>>() {
+                    });
+                    System.out.println(managerNames);
 //                    String managerList[] = managerNames.split(",");
 //                    int i = 1;
-//                    for (Map.Entry<Integer, String> mngrNm : managerNames.entrySet()) {
-//                        System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
-//                        i++;
-//                    }
-//
-//                    printMenu(header, addClientOptions2, false);
-//                    int index = input.nextInt();
-//                    input.nextLine();
+                    //for (Map.Entry<Integer, String> mngrNm : managerNames.entrySet()) {
+                    List keys = new ArrayList(managerNames.keySet());
+                    for (int i = 1; i <= managerNames.keySet().size(); i++) {
+                        System.out.println(i + " - " + managerNames.get(keys.get(i - 1)));
+                        //i++;
+                    }
+
+                    //TODO verify if choose a correct option
+                    printMenu(header, addClientOptions2, false);
+                    int index = input.nextInt();
+                    input.nextLine();
 //
 ////                    String clientManager = managerList[index];
 //
-//                    clientsProp.put("managerID", index);
+                    clientsProp.put("managerID", keys.get(index - 1));
+                    System.out.println(keys.get(index - 1));
 
                     response = target.request().post(inputClient);
                     value = response.readEntity(String.class);
@@ -200,6 +206,14 @@ public class AdminCLI {
 //                    }
                     break;
                 case 4:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
+                    managers = target.request().get();
+                    Map<Integer, String> allManagers = managers.readEntity(new GenericType<Map<Integer, String>>() {
+                    });
+
+
+                    break;
+                case 5:
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
 
                     String listClientOptions[] = {
@@ -207,8 +221,7 @@ public class AdminCLI {
                     };
 
                     printMenu(header, listClientOptions, false);
-                   response = target.request().get();
-
+                    response = target.request().get();
 
 
                     break;
