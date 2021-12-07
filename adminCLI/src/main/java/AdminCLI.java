@@ -2,8 +2,6 @@
 //import Entities.Currency;
 //import Entities.Manager;
 
-import data.Person;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -18,8 +16,8 @@ public class AdminCLI {
 
     public static void printMenu(String menuHeader, String menuOptions[], boolean isMessage) {
         //Clear screen
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+//        System.out.print("\033[H\033[2J");
+//        System.out.flush();
 
         System.out.println("\t\t" + menuHeader);
 
@@ -67,9 +65,10 @@ public class AdminCLI {
 
                     printMenu(header, addManagerOptions, true);
                     String managerName = input.nextLine();
-                    Response response = target.request().get();
+                    Entity<String> inputManager = Entity.entity(managerName, MediaType.APPLICATION_JSON);
+                    Response response = target.request().post(inputManager);
                     String value = response.readEntity(String.class);
-                    System.out.println("RESPONSE3: " + value);
+                    System.out.println("RESPONSE: " + value);
                     response.close();
 //                    if (restOp.AddManager(managerName)) {
 //                        String addManagerMessages[] = {
@@ -90,6 +89,7 @@ public class AdminCLI {
 //                    }
                     break;
                 case 2:
+                    HashMap<String, Object> clientsProp = new HashMap<>();
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
 
                     String addClientOptions[] = {
@@ -98,11 +98,12 @@ public class AdminCLI {
                     printMenu(header, addClientOptions, true);
                     String clientName = input.nextLine();
 
-                    Person c = new Person(clientName);
-                    Entity<Person> inputClient = Entity.entity(c, MediaType.APPLICATION_JSON);
+                    clientsProp.put("name", clientName);
+//                    Person c = new Person(clientName);
+                    Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
                     response = target.request().post(inputClient);
                     value = response.readEntity(String.class);
-                    System.out.println("RESPONSE4: " + value);
+                    System.out.println("RESPONSE: " + value);
                     response.close();
 
 //                    if (restOp.AddClient(clientName)) {
@@ -148,7 +149,7 @@ public class AdminCLI {
                     Entity<HashMap<String, Object>> inputCurrency = Entity.entity(currencyProp, MediaType.APPLICATION_JSON);
                     response = target.request().post(inputCurrency);
                     value = response.readEntity(String.class);
-                    System.out.println("RESPONSE4: " + value);
+                    System.out.println("RESPONSE: " + value);
                     response.close();
 
 //                    if (restOp.AddCurrency(currencyName, exchangeRate)) {

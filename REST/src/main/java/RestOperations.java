@@ -24,78 +24,75 @@ public class RestOperations {
     @POST
     @Path("/addClients")
     @Consumes(MediaType.APPLICATION_JSON)
-    public boolean AddClient(Person c) {
-        try{
-            System.out.println("Add Person: " + c.toString());
-            em.persist(c);
-        }catch (Exception e){
+    public Response AddClient(HashMap<String, Object> clientsProp) {
+        Person p = null;
+        try {
+            System.out.println("Add Person: " + clientsProp.get("name").toString());
+            p = new Person(clientsProp.get("name").toString());
+            em.persist(p);
+        } catch (Exception e) {
             e.printStackTrace();
-//            return Response.status(500).build();
-            return false;
+            return Response.status(500).build();
+//            return false;
         }
-//        return Response.status(Status.OK).entity(c).build();
-        return true;
+        return Response.status(Status.OK).entity(p).build();
+//        return true;
     }
 
-
-    @GET
+    @POST
     @Path("/addManager")
-    public boolean AddManager(String name) {
-        try{
-            Manager mn = new Manager(name);
+    public Response AddManager(String name) {
+        Manager mn = null;
+        try {
+            mn = new Manager(name);
             em.persist(mn);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return Response.status(500).build();
         }
-        return true;
+        return Response.status(Status.OK).entity(mn).build();
     }
 
     @POST
     @Path("/addCurrency")
-    public boolean AddCurrency(HashMap<String, Object> currencyProp) {
+    public Response AddCurrency(HashMap<String, Object> currencyProp) {
         System.out.println("Name: " + currencyProp.get("name").toString() + "\tExchangeRate: " + currencyProp.get("exchangeRate").toString());
-        try{
-            Currency c = new Currency(currencyProp.get("name").toString(), Float.parseFloat(currencyProp.get("exchangeRate").toString()));
+        Currency c = null;
+        try {
+            c = new Currency(currencyProp.get("name").toString(), Float.parseFloat(currencyProp.get("exchangeRate").toString()));
             em.persist(c);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return Response.status(500).build();
         }
-        return true;
+        return Response.status(Status.OK).entity(c).build();
     }
 
-    public List<Person> ListClients(){
-        try
-        {
+    public List<Person> ListClients() {
+        try {
             TypedQuery<Person> clients = em.createQuery("FROM Person c", Person.class);
             return clients.getResultList();
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    public List<Manager> ListManagers(){
-        try
-        {
+    public List<Manager> ListManagers() {
+        try {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
             return managers.getResultList();
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    public List<Currency> ListCurrencies(){
-        try
-        {
+    public List<Currency> ListCurrencies() {
+        try {
             TypedQuery<Currency> currencies = em.createQuery("FROM Currency crr", Currency.class);
             return currencies.getResultList();
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
