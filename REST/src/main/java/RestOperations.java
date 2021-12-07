@@ -30,14 +30,22 @@ public class RestOperations {
         Person p = null;
         try {
             System.out.println("Add Person: " + clientsProp.get("name").toString());
+            System.out.println("Manager ID: " + clientsProp.get("managerID").toString());
             p = new Person(clientsProp.get("name").toString());
+
+            int managerID = Integer.parseInt(clientsProp.get("managerID").toString());
+            System.out.println("Int ManagerID: " + managerID);
+            Manager m = em.find(Manager.class, managerID);
+            p.setManager(m);
+
             em.persist(p);
+
+            return Response.status(Status.OK).entity("Cliente inserido com sucesso!").build();
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(500).build();
 //            return false;
         }
-        return Response.status(Status.OK).entity(p).build();
 //        return true;
     }
 
@@ -70,9 +78,8 @@ public class RestOperations {
 
     @GET
     @Path("/listClients")
-    public List<Person> ListClients(){
-        try
-        {
+    public List<Person> ListClients() {
+        try {
             TypedQuery<Person> clients = em.createQuery("FROM Person c", Person.class);
             return clients.getResultList();
         } catch (Exception e) {
@@ -83,10 +90,9 @@ public class RestOperations {
 
     @GET
     @Path("/listManagers")
-    public Map<Integer, String> ListManagers(){
+    public Map<Integer, String> ListManagers() {
         Map<Integer, String> allManagersInfo = new HashMap<>();
-        try
-        {
+        try {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
             List<Manager> allManagers = managers.getResultList();
             for (Manager m : allManagers) {
@@ -97,15 +103,14 @@ public class RestOperations {
             return allManagersInfo;
         } catch (Exception e) {
             e.printStackTrace();
-            return  null;
+            return null;
         }
     }
 
     @GET
     @Path("/listCurrencies")
-    public List<Currency> ListCurrencies(){
-        try
-        {
+    public List<Currency> ListCurrencies() {
+        try {
             TypedQuery<Currency> currencies = em.createQuery("FROM Currency crr", Currency.class);
             return currencies.getResultList();
         } catch (Exception e) {

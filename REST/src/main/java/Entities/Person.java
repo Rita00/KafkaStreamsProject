@@ -1,5 +1,6 @@
 package Entities;
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 public class Person {
@@ -8,6 +9,9 @@ public class Person {
     private int id;
 
     private String name;
+
+    @ManyToOne
+    private Manager manager;
 
     public Person() {}
 
@@ -29,6 +33,14 @@ public class Person {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Manager getManager() {
+        return manager;
+    }
+
+    public void setManager(Manager manager) {
+        this.manager = manager;
     }
 
     @Override

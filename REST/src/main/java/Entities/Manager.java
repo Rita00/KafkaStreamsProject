@@ -1,9 +1,7 @@
 package Entities;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 public class Manager {
@@ -12,6 +10,9 @@ public class Manager {
     private int id;
 
     private String name;
+
+    @OneToMany(mappedBy = "manager")
+    private List<Person> clients;
 
     public Manager() {}
 
@@ -33,5 +34,13 @@ public class Manager {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Person> getClients() {
+        return clients;
+    }
+
+    public void setClients(List<Person> clients) {
+        this.clients = clients;
     }
 }
