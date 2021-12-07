@@ -38,10 +38,10 @@ public class Clients {
         propsProducer.put("linger.ms", 1);
         //The buffer.memory controls the total amount of memory available to the producer for buffering.
         propsProducer.put("buffer.memory", 33554432);
-        propsProducer.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        propsProducer.put("value.serializer", "org.apache.kafka.common.serialization.LongSerializer");
+        propsProducer.put("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
+        propsProducer.put("value.serializer", "org.apache.kafka.common.serialization.FloatSerializer");
         //Create producer with previous properties
-        Producer<String, Long> producer = new KafkaProducer<>(propsProducer);
+        Producer<Long, Float> producer = new KafkaProducer<>(propsProducer);
 
 
         // create instance for properties to access producer configs
@@ -70,8 +70,9 @@ public class Clients {
         //List of client ids
         ArrayList<Long> clientIds = new ArrayList<>();
 
+        float cred, pay;
         int sleepTime = 5000;
-        long clientId, cred, pay;
+        long clientId;
 
         while (true) {
             //Fetch all data from the DBInfoTopics
@@ -87,6 +88,7 @@ public class Clients {
                     //Which contains all the relevant data
                     Client client = gson.fromJson(json.get("payload").toString(), Client.class);
                     //If client is not already in the pool
+                    System.out.println(client.getClient_name());
                     if (!clientIds.contains(client.getClient_id())) {
                         //Add client to the pool
                         clientIds.add(client.getClient_id());
@@ -96,24 +98,24 @@ public class Clients {
                 System.out.println("Number of clients currently in the pool: " + clientIds.size());
 
                 //Produce random credit
-                cred = rand.nextInt(1000);
+                cred = rand.nextFloat() * (1000f - 1f);
 
                 //Choose random client to attach to the credit
                 clientId = clientIds.get(rand.nextInt(clientIds.size()));
 
                 //Produce to credits topic
-                producer.send(new ProducerRecord<String, Long>(cTopic,  String.valueOf(clientId), cred));
-                System.out.println("Client " + clientId + " made a credit of " + cred + " euros.");
+                producer.send(new ProducerRecord<Long, Float>(cTopic, (long) clientId, cred));
+                System.out.println("Client " + clientId + " made a credit of " + cred + "euros.");
 
                 //Produce random pay
-                pay = rand.nextInt(1000);
+                pay = rand.nextFloat() * (1000f - 1f);
 
                 //Choose random client to attach to the payment
                 clientId = clientIds.get(rand.nextInt(clientIds.size()));
 
                 //Produce to payments topic
-                producer.send(new ProducerRecord<String, Long>(pTopic,  String.valueOf(clientId), pay));
-                System.out.println("Client " + clientId + " made a payment of " + pay + " euros.");
+                producer.send(new ProducerRecord<Long, Float>(pTopic, (long) clientId, pay));
+                System.out.println("Client " + clientId + " made a payment of " + pay + "euros.");
 
                 //Sleep
                 Thread.sleep(sleepTime);

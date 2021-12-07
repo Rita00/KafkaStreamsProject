@@ -6,10 +6,13 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class AdminCLI {
@@ -93,7 +96,7 @@ public class AdminCLI {
                 case 2:
                     HashMap<String, Object> clientsProp = new HashMap<>();
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
-                    WebTarget get = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
+                    WebTarget get = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
 
                     String addClientOptions[] = {
                             "Insert client name: "
@@ -111,23 +114,22 @@ public class AdminCLI {
 
 
                     Response managers = get.request().get();
-                    String managerNames = managers.readEntity(String.class);
-                    String managerList[] = managerNames.split(",");
-                    int i = 1;
-                    for (String mngrNm:
-                            managerList) {
-                        System.out.println(i + "-" + mngrNm);
-                        i++;
-                    }
+                    Map<Integer, String> managerNames = (Map<Integer, String>) managers.readEntity(new GenericType<Map<Integer, String>>() { });
+//                    String managerList[] = managerNames.split(",");
+//                    int i = 1;
+//                    for (Map.Entry<Integer, String> mngrNm : managerNames.entrySet()) {
+//                        System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+//                        i++;
+//                    }
+//
+//                    printMenu(header, addClientOptions2, false);
+//                    int index = input.nextInt();
+//                    input.nextLine();
+//
+////                    String clientManager = managerList[index];
+//
+//                    clientsProp.put("managerID", index);
 
-                    printMenu(header, addClientOptions2, false);
-                    int index = input.nextInt();
-                    input.nextLine();
-
-                    String clientManager = managerList[index];
-
-                    Person c = new Person(clientName);
-                    Entity<Person> inputClient = Entity.entity(c, MediaType.APPLICATION_JSON);
                     response = target.request().post(inputClient);
                     value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);

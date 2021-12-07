@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="adminCLI" />
+        <module name="restclient" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="adminCLI" target="16" />
+      <module name="restclient" target="16" />
     </bytecodeTargetLevel>
   </component>
 </project>

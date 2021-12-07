@@ -6,9 +6,11 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.ws.rs.*;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -83,11 +85,17 @@ public class RestOperations {
 
     @GET
     @Path("/listManagers")
-    public List<Manager> ListManagers(){
+    public Map<Integer, String> ListManagers(){
+        Map<Integer, String> allManagersInfo = null;
         try
         {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
-            return managers.getResultList();
+            List<Manager> allManagers = managers.getResultList();
+            for (Manager m : allManagers) {
+                System.out.println("\n\n\n\nID: " + m.getId() + "\n\n\n\n");
+                allManagersInfo.put(m.getId(), m.getName());
+            }
+            return allManagersInfo;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
