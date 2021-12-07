@@ -30,6 +30,8 @@ public class AdminCLI {
         }
     }
 
+
+
     public static void main(String[] args) throws InterruptedException, IOException {
         Client client = ClientBuilder.newClient();
 
@@ -91,16 +93,41 @@ public class AdminCLI {
                 case 2:
                     HashMap<String, Object> clientsProp = new HashMap<>();
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
+                    WebTarget get = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
 
                     String addClientOptions[] = {
                             "Insert client name: "
                     };
+
                     printMenu(header, addClientOptions, true);
                     String clientName = input.nextLine();
 
                     clientsProp.put("name", clientName);
-//                    Person c = new Person(clientName);
                     Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
+
+                    String addClientOptions2[] = {
+                            "Please choose a manager: "
+                   };
+
+
+                    Response managers = get.request().get();
+                    String managerNames = managers.readEntity(String.class);
+                    String managerList[] = managerNames.split(",");
+                    int i = 1;
+                    for (String mngrNm:
+                            managerList) {
+                        System.out.println(i + "-" + mngrNm);
+                        i++;
+                    }
+
+                    printMenu(header, addClientOptions2, false);
+                    int index = input.nextInt();
+                    input.nextLine();
+
+                    String clientManager = managerList[index];
+
+                    Person c = new Person(clientName);
+                    Entity<Person> inputClient = Entity.entity(c, MediaType.APPLICATION_JSON);
                     response = target.request().post(inputClient);
                     value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);
@@ -169,6 +196,19 @@ public class AdminCLI {
 //                        printMenu(header, addCurrencyMessages, true);
 //                        System.in.read();
 //                    }
+                    break;
+                case 4:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
+
+                    String listClientOptions[] = {
+                            "List of clients: "
+                    };
+
+                    printMenu(header, listClientOptions, false);
+                   response = target.request().get();
+
+
+
                     break;
             }
             Thread.sleep(250);

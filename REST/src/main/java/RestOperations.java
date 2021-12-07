@@ -68,8 +68,11 @@ public class RestOperations {
         return Response.status(Status.OK).entity(c).build();
     }
 
-    public List<Person> ListClients() {
-        try {
+    @GET
+    @Path("/listClients")
+    public List<Person> ListClients(){
+        try
+        {
             TypedQuery<Person> clients = em.createQuery("FROM Person c", Person.class);
             return clients.getResultList();
         } catch (Exception e) {
@@ -78,8 +81,11 @@ public class RestOperations {
         }
     }
 
-    public List<Manager> ListManagers() {
-        try {
+    @GET
+    @Path("/listManagers")
+    public List<Manager> ListManagers(){
+        try
+        {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
             return managers.getResultList();
         } catch (Exception e) {
@@ -88,8 +94,11 @@ public class RestOperations {
         }
     }
 
-    public List<Currency> ListCurrencies() {
-        try {
+    @GET
+    @Path("/listCurrencies")
+    public List<Currency> ListCurrencies(){
+        try
+        {
             TypedQuery<Currency> currencies = em.createQuery("FROM Currency crr", Currency.class);
             return currencies.getResultList();
         } catch (Exception e) {
