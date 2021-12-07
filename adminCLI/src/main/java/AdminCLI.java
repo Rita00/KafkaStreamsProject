@@ -69,8 +69,7 @@ public class AdminCLI {
 
                     printMenu(header, addManagerOptions, true);
                     String managerName = input.nextLine();
-                    Manager m = new Manager(managerName);
-                    Entity<Manager> inputManager = Entity.entity(m, MediaType.APPLICATION_JSON);
+                    Entity<String> inputManager = Entity.entity(managerName, MediaType.APPLICATION_JSON);
                     Response response = target.request().post(inputManager);
                     String value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);
@@ -211,20 +210,62 @@ public class AdminCLI {
                     Map<Integer, String> allManagers = managers.readEntity(new GenericType<Map<Integer, String>>() {
                     });
 
+                    String listManagerOptions[] = {"List of Managers: "};
 
+                    printMenu(header, listManagerOptions, true);
+
+                    if (allManagers.isEmpty())
+                        System.out.println("Sem Managers!");
+                    else {
+                        keys = new ArrayList(allManagers.keySet());
+                        for (int i = 1; i <= allManagers.keySet().size(); i++) {
+                            System.out.println(i + " - " + allManagers.get(keys.get(i - 1)));
+                            //i++;
+                        }
+                    }
                     break;
                 case 5:
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
+                    Response clients = target.request().get();
 
-                    String listClientOptions[] = {
-                            "List of clients: "
-                    };
+                    Map<Integer, String> allClients = clients.readEntity(new GenericType<Map<Integer, String>>() {
+                    });
+                    String listClientOptions[] = {"List of clients: "};
 
-                    printMenu(header, listClientOptions, false);
-                    response = target.request().get();
+                    printMenu(header, listClientOptions, true);
 
+                    if (allClients.isEmpty())
+                        System.out.println("Sem Clientes!");
+                    else {
+                        keys = new ArrayList(allClients.keySet());
+                        for (int i = 1; i <= allClients.keySet().size(); i++) {
+                            System.out.println(i + " - " + allClients.get(keys.get(i - 1)));
+                            //i++;
+                        }
+                    }
 
                     break;
+                case 6:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCurrencies");
+                    Response currencies = target.request().get();
+
+                    Map<String, Double> allCurrencies = currencies.readEntity(new GenericType<Map<String, Double>>() {
+                    });
+                    String listCurrenciesOptions[] = {"List of currencies: "};
+
+                    printMenu(header, listCurrenciesOptions, true);
+                    response = target.request().get();
+
+                    if (allCurrencies.isEmpty())
+                        System.out.println("Sem moedas!");
+                    else {
+                        for (Map.Entry<String, Double> mngrNm : allCurrencies.entrySet()) {
+                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                        }
+                    }
+                    break;
+                case 7:
+                    return;
             }
             Thread.sleep(250);
         }

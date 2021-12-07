@@ -6,7 +6,6 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.ws.rs.*;
 import java.util.HashMap;
 import java.util.List;
@@ -51,14 +50,15 @@ public class RestOperations {
 
     @POST
     @Path("/addManager")
-    public Response AddManager(Manager m) {
+    public Response AddManager(String managerName) {
         try {
+            Manager m = new Manager(managerName);
             em.persist(m);
+            return Response.status(Status.OK).entity("Manager inserido com sucesso!").build();
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(500).build();
         }
-        return Response.status(Status.OK).entity(m).build();
     }
 
     @POST
@@ -69,22 +69,28 @@ public class RestOperations {
         try {
             c = new Currency(currencyProp.get("name").toString(), Float.parseFloat(currencyProp.get("exchangeRate").toString()));
             em.persist(c);
+            return Response.status(Status.OK).entity("Moeda inserida com sucesso!").build();
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(500).build();
         }
-        return Response.status(Status.OK).entity(c).build();
     }
 
     @GET
     @Path("/listClients")
-    public List<Person> ListClients() {
+    public Map<Integer, String> ListClients() {
+        Map<Integer, String> allClientsInfo = new HashMap<>();
         try {
             TypedQuery<Person> clients = em.createQuery("FROM Person c", Person.class);
-            return clients.getResultList();
+
+            List<Person> allClients = clients.getResultList();
+            for (Person p : allClients) {
+                allClientsInfo.put(p.getId(), p.getName());
+            }
+            return allClientsInfo;
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
+            return null;
         }
     }
 
@@ -96,7 +102,6 @@ public class RestOperations {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
             List<Manager> allManagers = managers.getResultList();
             for (Manager m : allManagers) {
-                System.out.println("\n\n\n\nID: " + m.getId() + "\n\n\n\n" + m.getName());
                 allManagersInfo.put(m.getId(), m.getName());
             }
             System.out.println(allManagersInfo);
@@ -109,13 +114,20 @@ public class RestOperations {
 
     @GET
     @Path("/listCurrencies")
-    public List<Currency> ListCurrencies() {
+    public Map<String, Double> ListCurrencies() {
+        Map<String, Double> allCurrenciesInfo = new HashMap<>();
+
         try {
             TypedQuery<Currency> currencies = em.createQuery("FROM Currency crr", Currency.class);
-            return currencies.getResultList();
+
+            List<Currency> allCurrencies = currencies.getResultList();
+            for (Currency c : allCurrencies) {
+                allCurrenciesInfo.put(c.getName(), c.getExchangeRate());
+            }
+            return allCurrenciesInfo;
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
+            return null;
         }
     }
 }

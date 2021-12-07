@@ -20,6 +20,14 @@ public class Currency {
         this.exchangeRate = exchangeRate;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public double getExchangeRate() {
         return exchangeRate;
     }
