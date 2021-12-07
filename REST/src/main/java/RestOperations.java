@@ -24,8 +24,9 @@ public class RestOperations {
     @POST
     @Path("/addClients")
     @Consumes(MediaType.APPLICATION_JSON)
-    public boolean AddClient(Person c) {
+    public boolean AddClient(String clientName) {
         try{
+            Person c = new Person(clientName);
             System.out.println("Add Person: " + c.toString());
             em.persist(c);
         }catch (Exception e){
@@ -65,6 +66,8 @@ public class RestOperations {
         return true;
     }
 
+    @GET
+    @Path("/listClients")
     public List<Person> ListClients(){
         try
         {
@@ -77,6 +80,8 @@ public class RestOperations {
         }
     }
 
+    @GET
+    @Path("/listManagers")
     public List<Manager> ListManagers(){
         try
         {
@@ -89,6 +94,8 @@ public class RestOperations {
         }
     }
 
+    @GET
+    @Path("/listCurrencies")
     public List<Currency> ListCurrencies(){
         try
         {
