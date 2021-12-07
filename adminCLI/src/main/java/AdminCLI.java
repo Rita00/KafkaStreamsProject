@@ -1,4 +1,4 @@
-//import Entities.Client;
+//import Entities.Person;
 //import Entities.Currency;
 //import Entities.Manager;
 
@@ -39,7 +39,7 @@ public class AdminCLI {
 
         String mainOptions[] = {
                 "1 - Add Manager",
-                "2 - Add Client",
+                "2 - Add Person",
                 "3 - Add Currency",
                 "4 - List Managers",
                 "5 - List Clients",
@@ -58,13 +58,18 @@ public class AdminCLI {
 
             switch (opt) {
                 case 1:
+                    WebTarget target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addManager");
+
                     String addManagerOptions[] = {
                             "Insert manager name: "
                     };
 
                     printMenu(header, addManagerOptions, true);
                     String managerName = input.nextLine();
-
+                    Response response = target.request().get();
+                    String value = response.readEntity(String.class);
+                    System.out.println("RESPONSE3: " + value);
+                    response.close();
 //                    if (restOp.AddManager(managerName)) {
 //                        String addManagerMessages[] = {
 //                                "Manager " + managerName + " added successfully!",
@@ -84,11 +89,7 @@ public class AdminCLI {
 //                    }
                     break;
                 case 2:
-                    WebTarget target = client.target("http://localhost:8080/restws/rest/RestOperations/addClients");
-                    Response response = target.request().get();
-                    String value = response.readEntity(String.class);
-                    System.out.println("RESPONSE1: " + value);
-                    response.close();
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
 
                     String addClientOptions[] = {
                             "Insert client name: "
@@ -96,8 +97,8 @@ public class AdminCLI {
                     printMenu(header, addClientOptions, true);
                     String clientName = input.nextLine();
 
-                    Person p = new Person(clientName);
-                    Entity<Person> inputClient = Entity.entity(p, MediaType.APPLICATION_JSON);
+                    Person c = new Person(clientName);
+                    Entity<Person> inputClient = Entity.entity(c, MediaType.APPLICATION_JSON);
                     response = target.request().post(inputClient);
                     value = response.readEntity(String.class);
                     System.out.println("RESPONSE4: " + value);
@@ -105,7 +106,7 @@ public class AdminCLI {
 
 //                    if (restOp.AddClient(clientName)) {
 //                        String addClientMessages[] = {
-//                                "Client " + clientName + " added successfully!",
+//                                "Person " + clientName + " added successfully!",
 //                                "Press enter to proceed..."
 //                        };
 //

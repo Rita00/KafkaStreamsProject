@@ -1,4 +1,4 @@
-import Entities.Client;
+import Entities.Person;
 import Entities.Currency;
 import Entities.Manager;
 
@@ -20,19 +20,20 @@ public class RestOperations {
     @PersistenceContext(name = "school")
     EntityManager em;
 
-    @GET
+    @POST
     @Path("/addClients")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response AddClient(String name) {
-        Client c = null;
+    public boolean AddClient(Person c) {
         try{
-            c = new Client(name);
+            System.out.println("Add Person: " + c.toString());
             em.persist(c);
         }catch (Exception e){
             e.printStackTrace();
-            return Response.status(500).build();
+//            return Response.status(500).build();
+            return false;
         }
-        return Response.status(Status.OK).entity(c).build();
+//        return Response.status(Status.OK).entity(c).build();
+        return true;
     }
 
 
@@ -63,10 +64,10 @@ public class RestOperations {
         return true;
     }
 
-    public List<Client> ListClients(){
+    public List<Person> ListClients(){
         try
         {
-            TypedQuery<Client> clients = em.createQuery("FROM Client c", Client.class);
+            TypedQuery<Person> clients = em.createQuery("FROM Person c", Person.class);
             return clients.getResultList();
         }
         catch(Exception e){

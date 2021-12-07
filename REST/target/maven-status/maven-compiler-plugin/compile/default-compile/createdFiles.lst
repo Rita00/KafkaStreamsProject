@@ -1,5 +1,5 @@
 RestOperations.class
 Entities/Manager.class
 ApplicationConfig.class
-Entities/Client.class
+Entities/Person.class
 Entities/Currency.class
