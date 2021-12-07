@@ -7,6 +7,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.*;
+import java.util.HashMap;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,12 +51,12 @@ public class RestOperations {
         return true;
     }
 
-    @GET
+    @POST
     @Path("/addCurrency")
-    public boolean AddCurrency(String name, Float exchangeRate) {
-        System.out.println("Name: " + name + "\tExchangeRate: " + exchangeRate);
+    public boolean AddCurrency(HashMap<String, Object> currencyProp) {
+        System.out.println("Name: " + currencyProp.get("name").toString() + "\tExchangeRate: " + currencyProp.get("exchangeRate").toString());
         try{
-            Currency c = new Currency(name, exchangeRate);
+            Currency c = new Currency(currencyProp.get("name").toString(), Float.parseFloat(currencyProp.get("exchangeRate").toString()));
             em.persist(c);
         }catch (Exception e){
             e.printStackTrace();

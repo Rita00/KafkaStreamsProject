@@ -11,6 +11,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class AdminCLI {
@@ -124,18 +125,32 @@ public class AdminCLI {
                     break;
 
                 case 3:
-//                    String addCurrencyOptions[] = {
-//                            "Insert currency name",
-//                            "and exchange rate (should be float)",
-//                            "separated by a single space"
-//                    };
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addCurrency");
+
+                    HashMap<String, Object> currencyProp = new HashMap<>();
+
+                    String addCurrencyOptions[] = {
+                            "Insert currency name",
+                            "and exchange rate (should be float)",
+                            "separated by a single space"
+                    };
 //
-//                    printMenu(header, addCurrencyOptions, true);
-//                    String info = input.nextLine();
+                    // TODO if currencies with 2 names
+                    printMenu(header, addCurrencyOptions, true);
+                    String info = input.nextLine();
 //
-//                    String currencyName = info.split(" ")[0];
-//                    Float exchangeRate = Float.parseFloat(info.split(" ")[1]);
-//
+                    String currencyName = info.split(" ")[0];
+                    currencyProp.put("name", currencyName);
+
+                    Float exchangeRate = Float.parseFloat(info.split(" ")[1]);
+                    currencyProp.put("exchangeRate", exchangeRate);
+
+                    Entity<HashMap<String, Object>> inputCurrency = Entity.entity(currencyProp, MediaType.APPLICATION_JSON);
+                    response = target.request().post(inputCurrency);
+                    value = response.readEntity(String.class);
+                    System.out.println("RESPONSE4: " + value);
+                    response.close();
+
 //                    if (restOp.AddCurrency(currencyName, exchangeRate)) {
 //                        String addCurrencyMessages[] = {
 //                                "Currency " + currencyName + " with exchange rate " + exchangeRate + " added successfully!",
