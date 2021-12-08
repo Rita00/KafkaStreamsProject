@@ -8,6 +8,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import Entities.Client;
 import org.json.JSONObject;
 
+import java.time.Duration;
 import java.util.*;
 
 public class Clients {
@@ -39,9 +40,9 @@ public class Clients {
         //The buffer.memory controls the total amount of memory available to the producer for buffering.
         propsProducer.put("buffer.memory", 33554432);
         propsProducer.put("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
-        propsProducer.put("value.serializer", "org.apache.kafka.common.serialization.FloatSerializer");
+        propsProducer.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         //Create producer with previous properties
-        Producer<Long, Float> producer = new KafkaProducer<>(propsProducer);
+        Producer<Long, String> producer = new KafkaProducer<>(propsProducer);
 
 
         // create instance for properties to access producer configs
@@ -71,13 +72,14 @@ public class Clients {
         ArrayList<Long> clientIds = new ArrayList<>();
 
         float cred, pay;
-        int sleepTime = 5000;
+        int sleepTime = 2500;
         long clientId;
 
         while (true) {
             //Fetch all data from the DBInfoTopics
             System.out.println("Getting clients from " + dbTopic);
-            ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(Long.MAX_VALUE);
+            Duration d = Duration.ofMillis(0);
+            ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(d);
             System.out.println("Number of records fetched from DB: " + clientRecords.count());
 
             for (int i = 0; i < 3; i++) {
@@ -86,12 +88,8 @@ public class Clients {
                     JSONObject json = new JSONObject(record.value());
                     //Instantiate client from payload part of json object
                     //Which contains all the relevant data
-                    //System.out.println(json);
-                    //System.out.println(record.value());
-                    System.out.println(json.get("payload").toString());
                     Client client = gson.fromJson(json.get("payload").toString(), Client.class);
                     //If client is not already in the pool
-                    //System.out.println(client.getClient_name());
                     if (!clientIds.contains(client.getClient_id())) {
                         //Add client to the pool
                         clientIds.add(client.getClient_id());
@@ -107,8 +105,8 @@ public class Clients {
                 clientId = clientIds.get(rand.nextInt(clientIds.size()));
 
                 //Produce to credits topic
-                producer.send(new ProducerRecord<Long, Float>(cTopic, (long) clientId, cred));
-                System.out.println("Client " + clientId + " made a credit of " + cred + "euros.");
+                producer.send(new ProducerRecord<Long, String>(cTopic, (long) clientId, String.valueOf(cred)));
+                System.out.println("Client " + clientId + " made a credit of " + cred + " euros.");
 
                 //Produce random pay
                 pay = rand.nextFloat() * (1000f - 1f);
@@ -117,8 +115,8 @@ public class Clients {
                 clientId = clientIds.get(rand.nextInt(clientIds.size()));
 
                 //Produce to payments topic
-                producer.send(new ProducerRecord<Long, Float>(pTopic, (long) clientId, pay));
-                System.out.println("Client " + clientId + " made a payment of " + pay + "euros.");
+                producer.send(new ProducerRecord<Long, String>(pTopic, (long) clientId, String.valueOf(pay)));
+                System.out.println("Client " + clientId + " made a payment of " + pay + " euros.");
 
                 //Sleep
                 Thread.sleep(sleepTime);

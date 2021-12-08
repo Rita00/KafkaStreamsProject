@@ -9,8 +9,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>16</maven.compiler.release>
-        <!--<wildfly-plugin-version>2.3.0.Final</wildfly-plugin-version>-->
+        <maven.compiler.release>15</maven.compiler.release>
+        <wildfly-plugin-version>2.3.0.Final</wildfly-plugin-version>
     </properties>
     <dependencies>
         <dependency>
@@ -40,12 +40,30 @@
             <artifactId>hibernate-core</artifactId>
             <version>5.3.20.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.plugins</groupId>
+            <artifactId>wildfly-maven-plugin</artifactId>
+            <version>1.0.2.Final</version>
+        </dependency>
     </dependencies>
 
     <build>
         <finalName>${project.artifactId}</finalName>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>1.0.2.Final</version>
+                    <configuration>
+                        <skip>false</skip>
+                        <hostname>wildfly</hostname>
+                        <port>9990</port>
+                        <filename>${project.artifactId}.ear</filename>
+                        <username>admin</username>
+                        <password>admin#7rules</password>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
@@ -64,19 +82,6 @@
                     <configuration>
                         <failOnMissingWebXml>false</failOnMissingWebXml>
                         <outputDirectory>${output}</outputDirectory>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>2.3.0.Final</version>
-                    <configuration>
-                        <skip>false</skip>
-                        <hostname>wildfly</hostname>
-                        <port>9990</port>
-                        <filename>${project.artifactId}.ear</filename>
-                        <username>admin</username>
-                        <password>admin#7rules</password>
                     </configuration>
                 </plugin>
             </plugins>

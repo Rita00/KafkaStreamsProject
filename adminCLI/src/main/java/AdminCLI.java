@@ -111,7 +111,6 @@ public class AdminCLI {
                             "Please choose a manager: "
                     };
 
-
                     Response managers = get.request().get();
                     Map<Integer, String> managerNames = managers.readEntity(new GenericType<Map<Integer, String>>() {
                     });
