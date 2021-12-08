@@ -1,8 +1,8 @@
 AdminCLI.class
-data\Manager.class
-data\Person.class
 AdminCLI$3.class
 AdminCLI$1.class
 AdminCLI$4.class
-data\Currency.class
+data/Currency.class
+data/Manager.class
 AdminCLI$2.class
+data/Person.class

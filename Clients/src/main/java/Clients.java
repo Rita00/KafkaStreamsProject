@@ -75,14 +75,15 @@ public class Clients {
         int sleepTime = 2500;
         long clientId;
 
-        while (true) {
-            //Fetch all data from the DBInfoTopics
-            System.out.println("Getting clients from " + dbTopic);
-            Duration d = Duration.ofMillis(0);
-            ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(d);
-            System.out.println("Number of records fetched from DB: " + clientRecords.count());
+        //Fetch all data from the DBInfoTopics
+        System.out.println("Getting clients from " + dbTopic);
+        Duration d = Duration.ofSeconds(60);
+        ConsumerRecords<Long, String> clientRecords = dbConsumer.poll(d);
+        System.out.println("Got " + clientRecords.count() + " clients from topic " + dbTopic);
 
-            for (int i = 0; i < 3; i++) {
+
+        while (true) {
+            if(clientRecords.count() > 0){
                 for (ConsumerRecord<Long, String> record : clientRecords) {
                     //Parse JSON string to JSON object
                     JSONObject json = new JSONObject(record.value());
@@ -96,31 +97,38 @@ public class Clients {
                         System.out.println("Added client: " + client.getClient_name());
                     }
                 }
-                System.out.println("Number of clients currently in the pool: " + clientIds.size());
 
-                //Produce random credit
-                cred = rand.nextFloat() * (1000f - 1f);
-
-                //Choose random client to attach to the credit
-                clientId = clientIds.get(rand.nextInt(clientIds.size()));
-
-                //Produce to credits topic
-                producer.send(new ProducerRecord<Long, String>(cTopic, (long) clientId, String.valueOf(cred)));
-                System.out.println("Client " + clientId + " made a credit of " + cred + " euros.");
-
-                //Produce random pay
-                pay = rand.nextFloat() * (1000f - 1f);
-
-                //Choose random client to attach to the payment
-                clientId = clientIds.get(rand.nextInt(clientIds.size()));
-
-                //Produce to payments topic
-                producer.send(new ProducerRecord<Long, String>(pTopic, (long) clientId, String.valueOf(pay)));
-                System.out.println("Client " + clientId + " made a payment of " + pay + " euros.");
-
-                //Sleep
-                Thread.sleep(sleepTime);
             }
+            System.out.println("Number of clients currently in the pool: " + clientIds.size());
+
+            //Produce random credit
+            cred = rand.nextFloat() * (1000f - 1f);
+
+            //Choose random client to attach to the credit
+            clientId = clientIds.get(rand.nextInt(clientIds.size()));
+
+            //Produce to credits topic
+            producer.send(new ProducerRecord<Long, String>(cTopic, (long) clientId, String.valueOf(cred)));
+            System.out.println("Client " + clientId + " made a credit of " + cred + " euros.");
+
+            //Produce random pay
+            pay = rand.nextFloat() * (1000f - 1f);
+
+            //Choose random client to attach to the payment
+            clientId = clientIds.get(rand.nextInt(clientIds.size()));
+
+            //Produce to payments topic
+            producer.send(new ProducerRecord<Long, String>(pTopic, (long) clientId, String.valueOf(pay)));
+            System.out.println("Client " + clientId + " made a payment of " + pay + " euros.");
+
+            //Fetch all data from the DBInfoTopics
+            System.out.println("Checking for new clients on topic " + dbTopic);
+            d = Duration.ofMillis(100);
+            clientRecords = dbConsumer.poll(d);
+            System.out.println(clientRecords.count() + " records found.");
+
+            //Sleep
+            Thread.sleep(sleepTime);
         }
         //producer.close();
     }

@@ -40,9 +40,11 @@ public class Streams {
 
         System.out.println("Created KStreams...");
 
+        Reducer<String> sumCredits = ((oldval, newval) -> oldval + "-" + newval);
+
         KTable<Long, String> outlines = creditsStream.
                 groupByKey().
-                reduce((oldval, newval) -> String.valueOf(Float.parseFloat(oldval) + Float.parseFloat(newval)));
+                reduce(sumCredits);
         outlines.mapValues((k, v) -> k + " => " + v).toStream().to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
