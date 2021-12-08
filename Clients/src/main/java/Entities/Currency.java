@@ -1,11 +1,12 @@
 package Entities;
 
+
 public class Currency {
     private int id;
 
     private String name;
 
-    private float exchangeRate;
+    private double exchangeRate;
 
     public Currency() {}
 
@@ -22,11 +23,11 @@ public class Currency {
         this.id = id;
     }
 
-    public float getExchangeRate() {
+    public double getExchangeRate() {
         return exchangeRate;
     }
 
-    public void setExchangeRate(float exchangeRate) {
+    public void setExchangeRate(double exchangeRate) {
         this.exchangeRate = exchangeRate;
     }
 

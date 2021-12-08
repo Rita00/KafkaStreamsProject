@@ -1,29 +1,46 @@
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.common.serialization.Serde;
+
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.streams.state.KeyValueIterator;
-import org.apache.kafka.streams.state.QueryableStoreTypes;
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Properties;
 
+
 public class Streams {
+    public static Double convertCurrency(String jsonString) {
+
+        JSONObject json = null;
+        try {
+            json = new JSONObject(jsonString);
+
+            double value = Double.parseDouble(json.get("value").toString());
+            double exchangeRate = Double.parseDouble(json.get("currencyExchangeRate").toString());
+            String coinName = json.get("currencyName").toString();
+            double valEuros = value * exchangeRate;
+
+
+            //System.out.println(value + " " + coinName + " is  " + valEuros + " euros");
+
+            return valEuros;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static void main(String args[]) throws Exception {
         //Set topics names
         String cTopic = "Credits";
         String pTopic = "Payments";
         String dbTopic = "DBInfoTopics";
-        String rTopic = "ResultsTopics";
+        String rTopicCred = "ResultsTopics";
+        String rTopicPay = "ResultsTopics_1";
+
 
         //Set properties
         java.util.Properties props = new Properties();
@@ -36,16 +53,29 @@ public class Streams {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<Long,String> creditsStream = builder.stream(cTopic);
 
-        System.out.println("Created KStreams...");
+        KStream<Long, String> creditsStream = builder.stream(cTopic);
 
-        Reducer<String> sumCredits = ((oldval, newval) -> oldval + "-" + newval);
+        KTable<Long, Double> creditsPerClient = creditsStream
+                .mapValues((v) -> convertCurrency(v))
+                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
+                .reduce((v1, v2) -> v1 + v2);
 
-        KTable<Long, String> outlines = creditsStream.
-                groupByKey().
-                reduce(sumCredits);
-        outlines.mapValues((k, v) -> k + " => " + v).toStream().to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+        creditsPerClient.mapValues((k, v) -> k + " => " + v)
+                .toStream()
+                .to(rTopicCred, Produced.with(Serdes.Long(), Serdes.String()));
+
+        KStream<Long, String> paymentsStream = builder.stream(pTopic);
+
+        KTable<Long, Double> paymentsPerClient = paymentsStream
+                .mapValues((v) -> convertCurrency(v))
+                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
+                .reduce((v1, v2) -> v1 + v2);
+
+        paymentsPerClient.mapValues((k, v) -> k + " => " + v)
+                .toStream()
+                .to(rTopicPay, Produced.with(Serdes.Long(), Serdes.String()));
+
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
