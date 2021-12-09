@@ -45,6 +45,10 @@ public class Streams {
         String pTopic = "Payments";
         String dbTopic = "DBInfoTopics";
         String rTopic = "ResultsTopics";
+        String paymentsPerClientTopic = "paymentsPerClient";
+        String creditsPerClientTopic = "creditsPerClient";
+        String balancePerClientTopic = "balancePerClient";
+        String totalResultsTopic = "totalResults";
 
 
         //Set properties
@@ -71,6 +75,36 @@ public class Streams {
         /*creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
                 .toStream()
                 .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
+
+        creditsPerClient.mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"total_credits\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"client_id\":" + k + "," +
+                                "\"total_credits\":" + v +
+                                "}" +
+                                "}"
+                )
+                .toStream()
+                .to(creditsPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
+
+
 
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
@@ -111,7 +145,7 @@ public class Streams {
                             "}"
                 )
                 .toStream()
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+                .to(paymentsPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //TO-DO
         //---Balance per client
