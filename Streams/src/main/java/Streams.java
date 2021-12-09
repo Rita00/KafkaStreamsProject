@@ -109,15 +109,10 @@ public class Streams {
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
         //---Payments Per Client
-
         KTable<Long, Double> paymentsPerClient = paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
-
-        //paymentsPerClient.mapValues((k, v) -> "Total payments for " + k + " are " + v + " euros.")
-        //       .toStream()
-        //     .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         paymentsPerClient.mapValues((k, v) ->
                             "{" +
