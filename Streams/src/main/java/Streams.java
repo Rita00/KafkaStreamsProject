@@ -6,6 +6,9 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
 
+import org.apache.kafka.streams.state.KeyValueIterator;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,7 +59,6 @@ public class Streams {
         StreamsBuilder builder = new StreamsBuilder();
 
 
-
         KStream<Long, String> creditsStream = builder.stream(cTopic);
 
         //---Credit per Client
@@ -66,9 +68,9 @@ public class Streams {
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
 
-        creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
+        /*creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
                 .toStream()
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
 
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
@@ -79,7 +81,35 @@ public class Streams {
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
 
-        paymentsPerClient.mapValues((k, v) -> "Total payments for " + k + " are " + v + " euros.")
+        //paymentsPerClient.mapValues((k, v) -> "Total payments for " + k + " are " + v + " euros.")
+        //       .toStream()
+        //     .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+
+        paymentsPerClient.mapValues((k, v) ->
+                            "{" +
+                                "\"schema\":{" +
+                                    "\"type\":\"struct\"," +
+                                    "\"fields\":[" +
+                                        "{" +
+                                            "\"type\":\"int64\"," +
+                                            "\"optional\":false," +
+                                            "\"field\":\"client_id\"" +
+                                        "}," +
+                                        "{" +
+                                            "\"type\":\"double\"," +
+                                            "\"optional\":false," +
+                                            "\"field\":\"total_payments\"" +
+                                        "}" +
+                                    "]," +
+                                    "\"optional\":false," +
+                                    "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                    "\"client_id\":" + k + "," +
+                                    "\"total_payments\":" + v +
+                                "}" +
+                            "}"
+                )
                 .toStream()
                 .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
@@ -105,9 +135,9 @@ public class Streams {
                 .windowedBy(TimeWindows.of(interval))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
 
-        creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
+        /*creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
                 .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
 
         //TO-DO
         //---Get the client with most negative balance
@@ -119,5 +149,6 @@ public class Streams {
         streams.start();
 
         System.out.println("Reading stream from topic " + cTopic);
+
     }
 }
