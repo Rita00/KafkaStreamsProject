@@ -1,6 +1,6 @@
 RestOperations.class
+Entities\Person.class
 ApplicationConfig.class
-Entities/Currency.class
-Entities/TotalInfo.class
-Entities/Manager.class
-Entities/Person.class
+Entities\Manager.class
+Entities\Currency.class
+Entities\TotalInfo.class

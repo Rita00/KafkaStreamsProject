@@ -40,11 +40,6 @@
             <artifactId>hibernate-core</artifactId>
             <version>5.3.20.Final</version>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.plugins</groupId>
-            <artifactId>wildfly-maven-plugin</artifactId>
-            <version>1.0.2.Final</version>
-        </dependency>
     </dependencies>
 
     <build>

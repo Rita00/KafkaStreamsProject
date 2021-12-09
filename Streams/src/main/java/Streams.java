@@ -1,6 +1,7 @@
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
@@ -8,7 +9,9 @@ import org.apache.kafka.streams.kstream.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.Duration;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 
 public class Streams {
@@ -38,8 +41,7 @@ public class Streams {
         String cTopic = "Credits";
         String pTopic = "Payments";
         String dbTopic = "DBInfoTopics";
-        String rTopicCred = "ResultsTopics";
-        String rTopicPay = "ResultsTopics_1";
+        String rTopic = "ResultsTopics";
 
 
         //Set properties
@@ -54,28 +56,64 @@ public class Streams {
         StreamsBuilder builder = new StreamsBuilder();
 
 
+
         KStream<Long, String> creditsStream = builder.stream(cTopic);
+
+        //---Credit per Client
 
         KTable<Long, Double> creditsPerClient = creditsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2);
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
 
-        creditsPerClient.mapValues((k, v) -> k + " => " + v)
+        creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
                 .toStream()
-                .to(rTopicCred, Produced.with(Serdes.Long(), Serdes.String()));
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
+
+        //---Payments Per Client
 
         KTable<Long, Double> paymentsPerClient = paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2);
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
 
-        paymentsPerClient.mapValues((k, v) -> k + " => " + v)
+        paymentsPerClient.mapValues((k, v) -> "Total payments for " + k + " are " + v + " euros.")
                 .toStream()
-                .to(rTopicPay, Produced.with(Serdes.Long(), Serdes.String()));
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
+        //TO-DO
+        //---Balance per client
+
+        //TO-DO
+        //---Sum every credit
+
+        //TO-DO
+        //---Sum every payment
+
+        //TO-DO
+        //---Sum every balance
+
+        //---Total credit per client for the last month (tumbling window)
+
+        Duration interval = Duration.ofDays(30);
+
+        KTable<Windowed<Long>, Double> creditsPerClientMonthly = creditsStream
+                .mapValues((v) -> convertCurrency(v))
+                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
+                .windowedBy(TimeWindows.of(interval))
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
+
+        creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
+                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+
+        //TO-DO
+        //---Get the client with most negative balance
+
+        //TO-DO
+        //---Get the manager who has made the highest revenue (the highest sum of clients payments)
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
