@@ -1,4 +1,3 @@
-
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
@@ -29,7 +28,6 @@ public class Streams {
             String coinName = json.get("currencyName").toString();
             double valEuros = value * exchangeRate;
 
-
             //System.out.println(value + " " + coinName + " is  " + valEuros + " euros");
 
             return valEuros;
@@ -46,7 +44,6 @@ public class Streams {
         String dbTopic = "DBInfoTopics";
         String rTopic = "ResultsTopics";
 
-
         //Set properties
         java.util.Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "exercises-application");
@@ -58,8 +55,8 @@ public class Streams {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-
         KStream<Long, String> creditsStream = builder.stream(cTopic);
+        KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
         //---Credit per Client
 
@@ -68,22 +65,39 @@ public class Streams {
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
 
-        /*creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
+        creditsPerClient.mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"total_payments\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"client_id\":" + k + "," +
+                                "\"total_payments\":" + v +
+                                "}" +
+                                "}"
+                )
                 .toStream()
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
-
-        KStream<Long, String> paymentsStream = builder.stream(pTopic);
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //---Payments Per Client
-
         KTable<Long, Double> paymentsPerClient = paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
-
-        //paymentsPerClient.mapValues((k, v) -> "Total payments for " + k + " are " + v + " euros.")
-        //       .toStream()
-        //     .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         paymentsPerClient.mapValues((k, v) ->
                             "{" +
