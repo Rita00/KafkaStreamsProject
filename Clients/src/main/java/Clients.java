@@ -78,17 +78,19 @@ public class Clients {
         //List of currencies
         ArrayList<Currency> currencies = new ArrayList<>();
 
-        //Fetch all data from the DBInfoTopics
-        System.out.println("Getting clients from " + dbClientsTopic);
-        Duration dClients = Duration.ofSeconds(30);
-        ConsumerRecords<Long, String> clientRecords = dbClients.poll(dClients);
-        System.out.println("Got " + clientRecords.count() + " clients from topic " + dbClientsTopic);
+        ConsumerRecords<Long, String> clientRecords;
+        Duration dClients;
 
-        //If there are no clients program can't go on
-        if(clientRecords.isEmpty()){
-            System.out.println("Couldn't get clients from " + dbClientsTopic);
-            return;
+        do{
+            //Fetch all data from the DBInfoTopics
+            System.out.println("Getting clients from " + dbClientsTopic);
+            dClients = Duration.ofSeconds(30);
+            clientRecords = dbClients.poll(dClients);
+            System.out.println("Got " + clientRecords.count() + " clients from topic " + dbClientsTopic);
+
+            //If there are no clients program can't go on
         }
+        while(clientRecords.isEmpty());
 
         //Fetch currencies from currencies topic
         System.out.println("Getting currencies from " + dbCurrenciesTopic);
@@ -202,12 +204,12 @@ public class Clients {
 
             //Fetch all data from the DBInfoTopics
             System.out.println("Checking for new client records on topic " + dbClientsTopic);
-            dClients = Duration.ofMillis(100);
+            dClients = Duration.ofMillis(250);
             clientRecords = dbClients.poll(dClients);
             System.out.println(clientRecords.count() + " records found.");
 
             System.out.println("Checking for new currencies records on topic " + dbCurrenciesTopic);
-            dCurrencies = Duration.ofMillis(100);
+            dCurrencies = Duration.ofMillis(250);
             currencyRecords = dbCurrencies.poll(dCurrencies);
             System.out.println(currencyRecords.count() + " records found.");
 

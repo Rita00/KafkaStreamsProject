@@ -234,8 +234,33 @@ public class Streams {
                 .windowedBy(TimeWindows.of(interval))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
 
-        creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
-               .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
+        creditsPerClientMonthly
+                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k,v))
+                .mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"total_credits\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"client_id\":" + k + "," +
+                                "\"total_credits_lastmonth\":" + v +
+                                "}" +
+                                "}"
+                )
                 .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //TO-DO
