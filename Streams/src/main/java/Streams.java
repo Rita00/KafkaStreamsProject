@@ -145,6 +145,40 @@ public class Streams {
         //TO-DO
         //---Balance per client
 
+        ValueJoiner<Double, Double, Double> valueJoiner = ((payment, credit) -> payment - credit);
+
+        KTable<Long, Double> joined = paymentsPerClient.join(creditsPerClient,
+                valueJoiner /* ValueJoiner *//* right value */
+        );
+
+        joined.mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"current_balance\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"client_id\":" + k + "," +
+                                "\"current_balance\":" + v +
+                                "}" +
+                                "}"
+                )
+                .toStream()
+                .to(balancePerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
+
         //TO-DO
         //---Sum every credit
 
