@@ -47,6 +47,10 @@ public class AdminCLI {
                 "4 - List Managers",
                 "5 - List Clients",
                 "6 - List Currencies",
+                "7 - Show credits per client",
+                "8 - Show payments per client",
+                "9 - Show balances per client",
+
                 "7 - Exit"
         };
 
@@ -264,6 +268,9 @@ public class AdminCLI {
                     }
                     break;
                 case 7:
+                    return;
+                    break;
+                case 8:
                     return;
             }
             Thread.sleep(250);
