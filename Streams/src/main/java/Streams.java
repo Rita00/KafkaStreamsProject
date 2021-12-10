@@ -26,11 +26,7 @@ public class Streams {
 
             double value = Double.parseDouble(json.get("value").toString());
             double exchangeRate = Double.parseDouble(json.get("currencyExchangeRate").toString());
-            String coinName = json.get("currencyName").toString();
             double valEuros = value * exchangeRate;
-
-
-            //System.out.println(value + " " + coinName + " is  " + valEuros + " euros");
 
             return valEuros;
         } catch (JSONException e) {
@@ -50,7 +46,6 @@ public class Streams {
         String balancePerClientTopic = "balancePerClient";
         String totalResultsTopic = "totalResults";
 
-
         //Set properties
         java.util.Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "exercises-application");
@@ -62,7 +57,6 @@ public class Streams {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-
         KStream<Long, String> creditsStream = builder.stream(cTopic);
 
         //---Credit per Client
@@ -71,10 +65,6 @@ public class Streams {
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
-
-        /*creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
-                .toStream()
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
 
         creditsPerClient.mapValues((k, v) ->
                         "{" +
@@ -103,8 +93,6 @@ public class Streams {
                 )
                 .toStream()
                 .to(creditsPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
-
-
 
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
@@ -198,9 +186,9 @@ public class Streams {
                 .windowedBy(TimeWindows.of(interval))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
 
-        /*creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
-                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
+        creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
+               .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //TO-DO
         //---Get the client with most negative balance

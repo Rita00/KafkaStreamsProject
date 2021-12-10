@@ -130,4 +130,60 @@ public class RestOperations {
             return null;
         }
     }
+
+    @GET
+    @Path("/listCreditPerClient")
+    public Map<Integer, String> ListCreditPerClient() {
+        Map<Integer, String> creditsPerClient = new HashMap<>();
+        try {
+            TypedQuery<Person> clients = em.createQuery("FROM Person p", Person.class);
+            List<Person> allClients = clients.getResultList();
+            for (Person p : allClients) {
+                creditsPerClient.put(p.getId(), String.valueOf(p.getTotal_credits()));
+            }
+            System.out.println(creditsPerClient);
+            return creditsPerClient;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @GET
+    @Path("/listPaymentsPerClient")
+    public Map<Integer, String> ListPaymentsPerClient() {
+        Map<Integer, String> paymentsPerClient = new HashMap<>();
+        try {
+            TypedQuery<Person> clients = em.createQuery("FROM Person p", Person.class);
+            List<Person> allClients = clients.getResultList();
+            for (Person p : allClients) {
+                paymentsPerClient.put(p.getId(), String.valueOf(p.getTotal_payments()));
+            }
+            System.out.println(paymentsPerClient);
+            return paymentsPerClient;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @GET
+    @Path("/listBalancesPerClient")
+    public Map<Integer, String> ListBalancesPerClient() {
+        Map<Integer, String> balancesPerClient = new HashMap<>();
+        try {
+            TypedQuery<Person> clients = em.createQuery("FROM Person p", Person.class);
+            List<Person> allClients = clients.getResultList();
+            for (Person p : allClients) {
+                balancesPerClient.put(p.getId(), String.valueOf(p.getCurrent_balance()));
+            }
+            System.out.println(balancesPerClient);
+            return balancesPerClient;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
+
