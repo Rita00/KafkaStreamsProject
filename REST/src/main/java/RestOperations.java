@@ -52,11 +52,15 @@ public class RestOperations {
     @Path("/addManager")
     public Response AddManager(String managerName) {
         try {
+            System.out.println("Manager name: " + managerName);
             Manager m = new Manager(managerName);
+            System.out.println("Manager: " + m);
             em.persist(m);
+            System.out.println("Manager ok");
             return Response.status(Status.OK).entity("Manager inserido com sucesso!").build();
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("ERROOO!!!");
             return Response.status(500).build();
         }
     }

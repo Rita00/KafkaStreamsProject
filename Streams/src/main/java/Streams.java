@@ -64,13 +64,7 @@ public class Streams {
         KTable<Long, Double> creditsPerClient = creditsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> {
-                    System.out.println("\n\n\n\n");
-                    System.out.println(v1);
-                    System.out.println(v2);
-                    System.out.println("\n\n\n\n");
-                    return v1 + v2;
-                }, Materialized.as("creditsPerClient"));
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
 
         creditsPerClient.mapValues((k, v) ->
                         "{" +
@@ -173,21 +167,13 @@ public class Streams {
                 .toStream()
                 .to(balancePerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
-        //TO-DO
+
         //---Sum every credit
-//        KStream<Long, String> dbCreditsStream = builder.stream(dbCreditsPerClientTopic, Consumed.with(Serdes.Long(), Serdes.String()));
         KTable<String, Double> dbCreditsTable = creditsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupBy((k, v) -> "allCredits", Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateCredits"));
 
-//        KTable<String, Double> dbCreditsTable = creditsStream
-//                .mapValues((jsonString) -> convertCurrency(jsonString))
-//                .groupByKey()
-//                .reduce((v1, v2) -> v1)
-//                .toStream()
-//                .groupBy((k, v) -> "allcredits")
-//                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateCredits"));
         dbCreditsTable
                 .mapValues((k, v) ->
                         "{" +
@@ -195,7 +181,7 @@ public class Streams {
                                 "\"type\":\"struct\"," +
                                 "\"fields\":[" +
                                 "{" +
-                                "\"type\":\"String\"," +
+                                "\"type\":\"string\"," +
                                 "\"optional\":false," +
                                 "\"field\":\"aggregate\"" +
                                 "}," +
@@ -209,20 +195,87 @@ public class Streams {
                                 "\"name\":\"total data\"" +
                                 "}," +
                                 "\"payload\":{" +
-                                "\"aggregate\":" + k + "," +
+                                "\"aggregate\":\"" + k + "\"," +
                                 "\"value\":" + v +
                                 "}" +
                                 "}"
                 )
                 .toStream()
-                .to("teste");
+                .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
 
 
-        //TO-DO
+
         //---Sum every payment
+        KTable<String, Double> dbPaymentsTable = creditsStream
+                .mapValues((v) -> convertCurrency(v))
+                .groupBy((k, v) -> "allPayments", Grouped.with(Serdes.String(), Serdes.Double()))
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregatePayments"));
 
-        //TO-DO
+        dbPaymentsTable
+                .mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"string\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"aggregate\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"value\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"aggregate\":\"" + k + "\"," +
+                                "\"value\":" + v +
+                                "}" +
+                                "}"
+                )
+                .toStream()
+                .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
+
+
         //---Sum every balance
+        KTable<String, Double> dbBalancesTable = creditsStream
+                .mapValues((v) -> convertCurrency(v))
+                .groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateBalances"));
+
+        dbBalancesTable
+                .mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"string\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"aggregate\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"value\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"aggregate\":\"" + k + "\"," +
+                                "\"value\":" + v +
+                                "}" +
+                                "}"
+                )
+                .toStream()
+                .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
+
 
         //---Total credit per client for the last month (tumbling window)
 

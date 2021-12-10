@@ -10,7 +10,6 @@ http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
         <class>Entities.Person</class>
         <class>Entities.Currency</class>
         <class>Entities.Manager</class>
-        <class>Entities.TotalInfo</class>
         <properties>
             <property name="javax.persistence.jdbc.user"
                       value="postgres" />
