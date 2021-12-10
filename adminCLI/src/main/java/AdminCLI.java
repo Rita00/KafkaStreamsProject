@@ -269,7 +269,6 @@ public class AdminCLI {
                     break;
                 case 7:
                     return;
-                    break;
                 case 8:
                     return;
             }
