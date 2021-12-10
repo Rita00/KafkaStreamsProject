@@ -100,7 +100,7 @@ public class Clients {
         Currency euro = new Currency("euro", 1f);
         currencies.add(euro);
 
-        int sleepTime = 2500;
+        int sleepTime = 5000;
         boolean found = false;
 
         Person credClient, payClient;
@@ -168,7 +168,7 @@ public class Clients {
             credClient = clients.get(rand.nextInt(clients.size()));
 
             //Produce random credit
-            cred = rand.nextFloat() * (1000f - 1f);
+            cred = rand.nextFloat() * (20f - 1f);
 
             //Choose random currency
             credCurr = currencies.get(rand.nextInt(currencies.size()));
@@ -183,7 +183,7 @@ public class Clients {
             System.out.println("Client " + credClient.getId() + " made a credit of " + cred + " " + credCurr.getName() + ".");
 
             //Produce random pay
-            pay = rand.nextFloat() * (1000f - 1f);
+            pay = rand.nextFloat() * (20f - 1f);
 
             //Choose random client to attach to the payment
             payClient = clients.get(rand.nextInt(clients.size()));

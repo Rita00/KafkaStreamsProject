@@ -1,14 +1,13 @@
 
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
 
-import org.apache.kafka.streams.state.KeyValueIterator;
-import org.apache.kafka.streams.state.QueryableStoreTypes;
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
+import org.apache.kafka.streams.state.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,11 +38,26 @@ public class Streams {
         return null;
     }
 
+    public static Double extractTotalCredits(String jsonString) {
+        try {
+            JSONObject json = new JSONObject(jsonString);
+
+            String payload = json.get("payload").toString();
+            JSONObject payloadObject = new JSONObject(payload);
+
+            return payloadObject.getDouble("total_credits");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static void main(String args[]) throws Exception {
         //Set topics names
         String cTopic = "Credits";
         String pTopic = "Payments";
         String dbTopic = "DBInfoTopics";
+        String dbCreditsPerClientTopic = "dbCreditsPerClientTopic";
         String rTopic = "ResultsTopics";
         String paymentsPerClientTopic = "paymentsPerClient";
         String creditsPerClientTopic = "creditsPerClient";
@@ -70,7 +84,13 @@ public class Streams {
         KTable<Long, Double> creditsPerClient = creditsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
+                .reduce((v1, v2) -> {
+                    System.out.println("\n\n\n\n");
+                    System.out.println(v1);
+                    System.out.println(v2);
+                    System.out.println("\n\n\n\n");
+                    return v1 + v2;
+                }, Materialized.as("creditsPerClient"));
 
         /*creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
                 .toStream()
@@ -105,50 +125,48 @@ public class Streams {
                 .to(creditsPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
 
-
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
         //---Payments Per Client
         KTable<Long, Double> paymentsPerClient = paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
+                .reduce(Double::sum, Materialized.as("paymentsPerClient"));
 
         paymentsPerClient.mapValues((k, v) ->
-                            "{" +
+                        "{" +
                                 "\"schema\":{" +
-                                    "\"type\":\"struct\"," +
-                                    "\"fields\":[" +
-                                        "{" +
-                                            "\"type\":\"int64\"," +
-                                            "\"optional\":false," +
-                                            "\"field\":\"client_id\"" +
-                                        "}," +
-                                        "{" +
-                                            "\"type\":\"double\"," +
-                                            "\"optional\":false," +
-                                            "\"field\":\"total_payments\"" +
-                                        "}" +
-                                    "]," +
-                                    "\"optional\":false," +
-                                    "\"name\":\"total data\"" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"total_payments\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
                                 "}," +
                                 "\"payload\":{" +
-                                    "\"client_id\":" + k + "," +
-                                    "\"total_payments\":" + v +
+                                "\"client_id\":" + k + "," +
+                                "\"total_payments\":" + v +
                                 "}" +
-                            "}"
+                                "}"
                 )
                 .toStream()
                 .to(paymentsPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
-        //TO-DO
-        //---Balance per client
 
+        //---Balance per client
         ValueJoiner<Double, Double, Double> valueJoiner = ((payment, credit) -> payment - credit);
 
         KTable<Long, Double> joined = paymentsPerClient.join(creditsPerClient,
-                valueJoiner /* ValueJoiner *//* right value */
+                valueJoiner
         );
 
         joined.mapValues((k, v) ->
@@ -181,6 +199,48 @@ public class Streams {
 
         //TO-DO
         //---Sum every credit
+//        KStream<Long, String> dbCreditsStream = builder.stream(dbCreditsPerClientTopic, Consumed.with(Serdes.Long(), Serdes.String()));
+        KTable<String, Double> dbCreditsTable = creditsStream
+                .mapValues((v) -> convertCurrency(v))
+                .groupBy((k, v) -> "allCredits", Grouped.with(Serdes.String(), Serdes.Double()))
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateCredits"));
+
+//        KTable<String, Double> dbCreditsTable = creditsStream
+//                .mapValues((jsonString) -> convertCurrency(jsonString))
+//                .groupByKey()
+//                .reduce((v1, v2) -> v1)
+//                .toStream()
+//                .groupBy((k, v) -> "allcredits")
+//                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateCredits"));
+        dbCreditsTable
+                .mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"String\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"aggregate\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"value\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"aggregate\":" + k + "," +
+                                "\"value\":" + v +
+                                "}" +
+                                "}"
+                )
+                .toStream()
+                .to("teste");
+
 
         //TO-DO
         //---Sum every payment
