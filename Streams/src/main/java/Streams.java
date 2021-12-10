@@ -25,27 +25,9 @@ public class Streams {
 
             double value = Double.parseDouble(json.get("value").toString());
             double exchangeRate = Double.parseDouble(json.get("currencyExchangeRate").toString());
-            String coinName = json.get("currencyName").toString();
             double valEuros = value * exchangeRate;
 
-
-            //System.out.println(value + " " + coinName + " is  " + valEuros + " euros");
-
             return valEuros;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static Double extractTotalCredits(String jsonString) {
-        try {
-            JSONObject json = new JSONObject(jsonString);
-
-            String payload = json.get("payload").toString();
-            JSONObject payloadObject = new JSONObject(payload);
-
-            return payloadObject.getDouble("total_credits");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -64,7 +46,6 @@ public class Streams {
         String balancePerClientTopic = "balancePerClient";
         String totalResultsTopic = "totalResults";
 
-
         //Set properties
         java.util.Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "exercises-application");
@@ -75,7 +56,6 @@ public class Streams {
         System.out.println("Creating streams...");
 
         StreamsBuilder builder = new StreamsBuilder();
-
 
         KStream<Long, String> creditsStream = builder.stream(cTopic);
 
@@ -91,10 +71,6 @@ public class Streams {
                     System.out.println("\n\n\n\n");
                     return v1 + v2;
                 }, Materialized.as("creditsPerClient"));
-
-        /*creditsPerClient.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros.")
-                .toStream()
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
 
         creditsPerClient.mapValues((k, v) ->
                         "{" +
@@ -131,7 +107,7 @@ public class Streams {
         KTable<Long, Double> paymentsPerClient = paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce(Double::sum, Materialized.as("paymentsPerClient"));
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
 
         paymentsPerClient.mapValues((k, v) ->
                         "{" +
@@ -258,9 +234,9 @@ public class Streams {
                 .windowedBy(TimeWindows.of(interval))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
 
-        /*creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
-                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));*/
+        creditsPerClientMonthly.mapValues((k, v) -> "Total credits for " + k + " are " + v + " euros for the last month.")
+               .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, "" + k + "-->" + v))
+                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //TO-DO
         //---Get the client with most negative balance
