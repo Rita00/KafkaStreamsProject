@@ -1,9 +1,7 @@
 import Entities.*;
 
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.ws.rs.*;
 import java.util.HashMap;
 import java.util.List;
@@ -185,6 +183,48 @@ public class RestOperations {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @GET
+    @Path("listTotalCredits")
+    public Double ListTotalCredits() {
+        Query q = em.createQuery("FROM TotalResults r where r.aggregate =: aggregate");
+        q.setParameter("aggregate", "allCredits");
+
+        try {
+            TotalResults credits = (TotalResults) q.getSingleResult();
+            return credits.getValue();
+        } catch (NoResultException e) {
+            return 0d;
+        }
+    }
+
+    @GET
+    @Path("listTotalPayments")
+    public Double ListTotalPayments() {
+        Query q = em.createQuery("FROM TotalResults r where r.aggregate =: aggregate");
+        q.setParameter("aggregate", "allPayments");
+
+        try {
+            TotalResults payments = (TotalResults) q.getSingleResult();
+            return payments.getValue();
+        } catch (NoResultException e) {
+            return 0d;
+        }
+    }
+
+    @GET
+    @Path("listTotalBalances")
+    public Double ListTotalBalances() {
+        Query q = em.createQuery("FROM TotalResults r where r.aggregate =: aggregate");
+        q.setParameter("aggregate", "allBalances");
+
+        try {
+            TotalResults balances = (TotalResults) q.getSingleResult();
+            return balances.getValue();
+        } catch (NoResultException e) {
+            return 0d;
         }
     }
 }

@@ -36,8 +36,6 @@ public class AdminCLI {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         Client client = ClientBuilder.newClient();
-
-//        RestOperations restOp = new RestOperations();
         Scanner input = new Scanner(System.in);
 
         String mainOptions[] = {
@@ -80,23 +78,6 @@ public class AdminCLI {
                     String value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);
                     response.close();
-//                    if (restOp.AddManager(managerName)) {
-//                        String addManagerMessages[] = {
-//                                "Manager " + managerName + " added successfully!",
-//                                "Press enter to proceed..."
-//                        };
-//
-//                        printMenu(header, addManagerMessages, true);
-//                        System.in.read();
-//                    } else {
-//                        String addManagerMessages[] = {
-//                                "Something went wrong while adding manager " + managerName,
-//                                "Press enter to proceed..."
-//                        };
-//
-//                        printMenu(header, addManagerMessages, true);
-//                        System.in.read();
-//                    }
                     break;
                 case 2:
                     HashMap<String, Object> clientsProp = new HashMap<>();
@@ -121,22 +102,18 @@ public class AdminCLI {
                     Map<Integer, String> managerNames = managers.readEntity(new GenericType<Map<Integer, String>>() {
                     });
                     System.out.println(managerNames);
-//                    String managerList[] = managerNames.split(",");
-//                    int i = 1;
-                    //for (Map.Entry<Integer, String> mngrNm : managerNames.entrySet()) {
+
                     List keys = new ArrayList(managerNames.keySet());
                     for (int i = 1; i <= managerNames.keySet().size(); i++) {
                         System.out.println(i + " - " + managerNames.get(keys.get(i - 1)));
-                        //i++;
+
                     }
 
                     //TODO verify if choose a correct option
                     printMenu(header, addClientOptions2, false);
                     int index = input.nextInt();
                     input.nextLine();
-//
-////                    String clientManager = managerList[index];
-//
+
                     clientsProp.put("managerID", keys.get(index - 1));
                     System.out.println(keys.get(index - 1));
 
@@ -144,24 +121,6 @@ public class AdminCLI {
                     value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);
                     response.close();
-
-//                    if (restOp.AddClient(clientName)) {
-//                        String addClientMessages[] = {
-//                                "Person " + clientName + " added successfully!",
-//                                "Press enter to proceed..."
-//                        };
-//
-//                        printMenu(header, addClientMessages, true);
-//                        System.in.read();
-//                    } else {
-//                        String addClientMessages[] = {
-//                                "Something went wrong while adding client " + clientName,
-//                                "Press enter to proceed..."
-//                        };
-//
-//                        printMenu(header, addClientMessages, true);
-//                        System.in.read();
-//                    }
                     break;
 
                 case 3:
@@ -190,24 +149,6 @@ public class AdminCLI {
                     value = response.readEntity(String.class);
                     System.out.println("RESPONSE: " + value);
                     response.close();
-
-//                    if (restOp.AddCurrency(currencyName, exchangeRate)) {
-//                        String addCurrencyMessages[] = {
-//                                "Currency " + currencyName + " with exchange rate " + exchangeRate + " added successfully!",
-//                                "Press enter to proceed..."
-//                        };
-//
-//                        printMenu(header, addCurrencyMessages, true);
-//                        System.in.read();
-//                    } else {
-//                        String addCurrencyMessages[] = {
-//                                "Something went wrong while adding currency " + currencyName + " with exchange rate " + exchangeRate,
-//                                "Press enter to proceed..."
-//                        };
-//
-//                        printMenu(header, addCurrencyMessages, true);
-//                        System.in.read();
-//                    }
                     break;
                 case 4:
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
@@ -259,7 +200,6 @@ public class AdminCLI {
                     String listCurrenciesOptions[] = {"List of currencies: "};
 
                     printMenu(header, listCurrenciesOptions, true);
-                    response = target.request().get();
 
                     if (allCurrencies.isEmpty())
                         System.out.println("Sem moedas!");
@@ -278,7 +218,6 @@ public class AdminCLI {
                     String listCreditsPerClientOptions[] = {"List of credits per client: "};
 
                     printMenu(header, listCreditsPerClientOptions, true);
-                    response = target.request().get();
                     if (allCreditsPerClient.isEmpty())
                         System.out.println("Without credits!");
                     else {
@@ -296,7 +235,6 @@ public class AdminCLI {
                     String listPaymentsPerClientOptions[] = {"List of payments per client: "};
 
                     printMenu(header, listPaymentsPerClientOptions, true);
-                    response = target.request().get();
                     if (allPaymentsPerClient.isEmpty())
                         System.out.println("Without payments!");
                     else {
@@ -314,13 +252,60 @@ public class AdminCLI {
                     String listBalancesPerClientOptions[] = {"List of balances per client: "};
 
                     printMenu(header, listBalancesPerClientOptions, true);
-                    response = target.request().get();
                     if (allBalancesPerClient.isEmpty())
                         System.out.println("Without credits or payments!");
                     else {
                         for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
                             System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
                         }
+                    }
+                    break;
+                case 10:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalCredits");
+                    Response allCredits = target.request().get();
+
+                    Double totalCredits = allCredits.readEntity(Double.class);
+
+                    String TotalCreditsInfo[] = {"List of balances per client: "};
+
+                    printMenu(header, TotalCreditsInfo, true);
+
+                    if (totalCredits == 0)
+                        System.out.println("Without credits!");
+                    else {
+                        System.out.println("Total credits: " + totalCredits);
+                    }
+                    break;
+                case 11:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalPayments");
+                    Response allPayments = target.request().get();
+
+                    Double totalPayments = allPayments.readEntity(Double.class);
+
+                    String TotalPaymentsInfo[] = {"List of balances per client: "};
+
+                    printMenu(header, TotalPaymentsInfo, true);
+
+                    if (totalPayments == 0)
+                        System.out.println("Without payments!");
+                    else {
+                        System.out.println("Total payments: " + totalPayments);
+                    }
+                    break;
+                case 12:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalBalances");
+                    Response allBalances = target.request().get();
+
+                    Double totalBalances = allBalances.readEntity(Double.class);
+
+                    String TotalBalancesInfo[] = {"List of balances per client: "};
+
+                    printMenu(header, TotalBalancesInfo, true);
+
+                    if (totalBalances == 0)
+                        System.out.println("Without credits or payments!");
+                    else {
+                        System.out.println("Total payments: " + totalBalances);
                     }
                     break;
                 case 13:

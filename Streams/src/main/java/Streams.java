@@ -232,9 +232,7 @@ public class Streams {
                 .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
 
         //---Sum every balance
-
         KStream<Long, Double> allActionsStream = builder.stream("allActions", Consumed.with(Serdes.Long(), Serdes.Double()));
-
 
         paymentsStream
                 .mapValues((v) -> convertCurrency(v))
@@ -243,9 +241,6 @@ public class Streams {
         creditsStream
                 .mapValues((v) -> -convertCurrency(v))
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
-
-
-
 
         KTable<String, Double> dbBalancesTable = allActionsStream.
                 groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
