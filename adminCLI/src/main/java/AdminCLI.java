@@ -51,7 +51,8 @@ public class AdminCLI {
                 "10 - Show total credits",
                 "11 - Show total payments",
                 "12 - Show total balances",
-                "13 - Exit"
+                "13 - Show client with highest debt",
+                "14 - Exit"
         };
 
         String header = "Administration Menu";
@@ -309,6 +310,22 @@ public class AdminCLI {
                     }
                     break;
                 case 13:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
+                    Response clientId = target.request().get();
+
+                    Long clientIdLong = clientId.readEntity(Long.class);
+
+                    String highestDebInfo[] = {"Client with Highest Debt: "};
+
+                    printMenu(header, highestDebInfo, true);
+
+                    if (clientIdLong == 0)
+                        System.out.println("No client found");
+                    else {
+                        System.out.println("Client with most negative balance: " + clientIdLong);
+                    }
+                    break;
+                case 14:
                     return;
             }
             Thread.sleep(250);

@@ -1,9 +1,10 @@
 RestOperations.class
+Entities\BalancePerClient.class
+Entities\MostNegBalance.class
+Entities\Person.class
 ApplicationConfig.class
-Entities/TotalResults.class
-Entities/CreditsPerClient.class
-Entities/Currency.class
-Entities/Manager.class
-Entities/PaymentsPerClient.class
-Entities/BalancePerClient.class
-Entities/Person.class
+Entities\Manager.class
+Entities\TotalResults.class
+Entities\Currency.class
+Entities\PaymentsPerClient.class
+Entities\CreditsPerClient.class

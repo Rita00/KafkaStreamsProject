@@ -227,4 +227,17 @@ public class RestOperations {
             return 0d;
         }
     }
+
+
+    @GET
+    @Path("listClientHighestDebt")
+    public Long ListClientHighestDebt() {
+        Query q = em.createQuery("FROM mostNegBalance mnb");
+        try {
+            MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
+            return clientId.getValue();
+        } catch (NoResultException e) {
+            return 0l;
+        }
+    }
 }
