@@ -17,29 +17,21 @@ public class Streams {
     private static double negBalance = 99999999d;
     private static Long negId = 0l;
 
-    public static Double addToAggregator(Long aggKey, String newValue, Double aggValue){
+    public static String addToAggregator(Long aggKey, String newValue, String aggValue) {
+        Long newClientId = Long.parseLong(newValue.split(",")[0]);
+        Double newBalance = Double.parseDouble(newValue.split(",")[1]);
 
-        //Parse JSON string to JSON object
-        JSONObject json = null;
-        try {
-            json = new JSONObject(newValue);
+        Long oldClientId = Long.parseLong(aggValue.split(",")[0]);
+        Double oldBalance = Double.parseDouble(aggValue.split(",")[1]);
 
-            //Instantiate client from payload part of json object
-            //Which contains all the relevant data
-            JSONObject jsonObject = new JSONObject(json.get("payload").toString());
-
-            Double newBalance = Double.parseDouble(jsonObject.get("current_balance").toString());
-
-            if(newBalance < aggValue){
-                return newBalance;
+        if(newBalance < 0 ){
+            System.out.println("Old balance" + oldBalance + " with Id " + oldClientId);
+            if(newBalance < oldBalance){
+                System.out.println("New balance" + newBalance + " with Id " + newClientId;
+                return (newClientId) + "," + (newBalance);
             }
-        } catch (JSONException e) {
-
-            e.printStackTrace();
-            return null;
         }
-
-        return aggValue;
+        return (oldClientId) + "," + (oldBalance);
     }
 
     public static Double convertCurrency(String jsonString) {
@@ -344,15 +336,16 @@ public class Streams {
 
         //TO-DO
         //---Get the client with most negative balance
-        KStream<Long, String> balanceStream = builder.stream(balancePerClientTopic);
-        KTable<Long, Double> mostNegBalance = balanceStream
+        joined
+                .toStream()
+                .map((k, v) -> new KeyValue<Long, String>(1l, k + "," + v))
                 .groupByKey()
                 .aggregate(
-                        () -> 0.0,
+                        () -> "0,0",
                         (aggKey, newValue, aggValue) -> addToAggregator(aggKey, newValue, aggValue)
-                );
-
-        mostNegBalance
+                )
+                .toStream()
+                .mapValues(v -> v.split(",")[0])
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
@@ -361,30 +354,27 @@ public class Streams {
                                 "{" +
                                 "\"type\":\"int64\"," +
                                 "\"optional\":false," +
-                                "\"field\":\"client_id\"" +
+                                "\"field\":\"aggregate\"" +
                                 "}," +
                                 "{" +
-                                "\"type\":\"double\"," +
+                                "\"type\":\"int64\"," +
                                 "\"optional\":false," +
-                                "\"field\":\"current_balance\"" +
+                                "\"field\":\"value\"" +
                                 "}" +
                                 "]," +
                                 "\"optional\":false," +
-                                "\"name\":\"total data\"" +
+                                "\"name\":\"mostneg\"" +
                                 "}," +
                                 "\"payload\":{" +
-                                "\"client_id\":" + k + "," +
-                                "\"current_balance\":" + v +
+                                "\"aggregate\":\"" + k + "\"," +
+                                "\"value\":" + v +
                                 "}" +
                                 "}"
                 )
-                .toStream()
                 .to(mostNegBalanceTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
-
-
         //TO-DO
-        //---Get the manager who has made the highest revenue (the highest sum of clients payments)
+        //---(the highest sum of clients payments)
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
