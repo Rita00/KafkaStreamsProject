@@ -38,10 +38,10 @@ public class Streams {
         String cTopic = "Credits";
         String pTopic = "Payments";
         String windowedCreditPerClientTopic = "windowedCreditPerClient";
-        String paymentsPerClientTopic = "paymentsPerClient";
-        String creditsPerClientTopic = "creditsPerClient";
-        String balancePerClientTopic = "balancePerClient";
-        String totalResultsTopic = "totalResults";
+        String paymentsPerClientTopic = "paymentsperclient";
+        String creditsPerClientTopic = "creditsperclient";
+        String balancePerClientTopic = "balanceperclient";
+        String totalResultsTopic = "totalresults";
         String mostNegBalanceTopic = "mostNegBalance";
 
         //Set properties
@@ -64,7 +64,7 @@ public class Streams {
         KTable<Long, Double> creditsPerClient = creditsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClient"));
+                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsperclient"));
         creditsPerClient
                 .mapValues((k, v) ->
                         "{" +

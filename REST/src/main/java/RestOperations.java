@@ -1,6 +1,4 @@
-import Entities.Person;
-import Entities.Currency;
-import Entities.Manager;
+import Entities.*;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -22,6 +20,7 @@ public class RestOperations {
     @PersistenceContext(name = "school")
     EntityManager em;
 
+    //Todo nao permitir nomes iguais
     @POST
     @Path("/addClients")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -137,13 +136,13 @@ public class RestOperations {
 
     @GET
     @Path("/listCreditPerClient")
-    public Map<Integer, String> ListCreditPerClient() {
-        Map<Integer, String> creditsPerClient = new HashMap<>();
+    public Map<Integer, Double> ListCreditPerClient() {
+        Map<Integer, Double> creditsPerClient = new HashMap<>();
         try {
-            TypedQuery<Person> clients = em.createQuery("FROM Person p", Person.class);
-            List<Person> allClients = clients.getResultList();
-            for (Person p : allClients) {
-                creditsPerClient.put(p.getId(), String.valueOf(p.getTotal_credits()));
+            TypedQuery<CreditsPerClient> clients = em.createQuery("FROM CreditsPerClient p", CreditsPerClient.class);
+            List<CreditsPerClient> allClients = clients.getResultList();
+            for (CreditsPerClient p : allClients) {
+                creditsPerClient.put(p.getClient_id(), p.getTotal_credits());
             }
             System.out.println(creditsPerClient);
             return creditsPerClient;
@@ -155,13 +154,13 @@ public class RestOperations {
 
     @GET
     @Path("/listPaymentsPerClient")
-    public Map<Integer, String> ListPaymentsPerClient() {
-        Map<Integer, String> paymentsPerClient = new HashMap<>();
+    public Map<Integer, Double> ListPaymentsPerClient() {
+        Map<Integer, Double> paymentsPerClient = new HashMap<>();
         try {
-            TypedQuery<Person> clients = em.createQuery("FROM Person p", Person.class);
-            List<Person> allClients = clients.getResultList();
-            for (Person p : allClients) {
-                paymentsPerClient.put(p.getId(), String.valueOf(p.getTotal_payments()));
+            TypedQuery<PaymentsPerClient> clients = em.createQuery("FROM PaymentsPerClient p", PaymentsPerClient.class);
+            List<PaymentsPerClient> allClients = clients.getResultList();
+            for (PaymentsPerClient p : allClients) {
+                paymentsPerClient.put(p.getClient_id(), p.getTotal_payments());
             }
             System.out.println(paymentsPerClient);
             return paymentsPerClient;
@@ -173,13 +172,13 @@ public class RestOperations {
 
     @GET
     @Path("/listBalancesPerClient")
-    public Map<Integer, String> ListBalancesPerClient() {
-        Map<Integer, String> balancesPerClient = new HashMap<>();
+    public Map<Integer, Double> ListBalancesPerClient() {
+        Map<Integer, Double> balancesPerClient = new HashMap<>();
         try {
-            TypedQuery<Person> clients = em.createQuery("FROM Person p", Person.class);
-            List<Person> allClients = clients.getResultList();
-            for (Person p : allClients) {
-                balancesPerClient.put(p.getId(), String.valueOf(p.getCurrent_balance()));
+            TypedQuery<BalancePerClient> clients = em.createQuery("FROM BalancePerClient p", BalancePerClient.class);
+            List<BalancePerClient> allClients = clients.getResultList();
+            for (BalancePerClient p : allClients) {
+                balancesPerClient.put(p.getClient_id(), p.getCurrent_balance());
             }
             System.out.println(balancesPerClient);
             return balancesPerClient;
@@ -188,6 +187,4 @@ public class RestOperations {
             return null;
         }
     }
-
 }
-

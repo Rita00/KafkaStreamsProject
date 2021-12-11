@@ -50,8 +50,10 @@ public class AdminCLI {
                 "7 - Show credits per client",
                 "8 - Show payments per client",
                 "9 - Show balances per client",
-
-                "7 - Exit"
+                "10 - Show total credits",
+                "11 - Show total payments",
+                "12 - Show total balances",
+                "13 - Exit"
         };
 
         String header = "Administration Menu";
@@ -268,8 +270,60 @@ public class AdminCLI {
                     }
                     break;
                 case 7:
-                    return;
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCreditPerClient");
+                    Response creditsPerClient = target.request().get();
+
+                    Map<String, Float> allCreditsPerClient = creditsPerClient.readEntity(new GenericType<Map<String, Float>>() {
+                    });
+                    String listCreditsPerClientOptions[] = {"List of credits per client: "};
+
+                    printMenu(header, listCreditsPerClientOptions, true);
+                    response = target.request().get();
+                    if (allCreditsPerClient.isEmpty())
+                        System.out.println("Without credits!");
+                    else {
+                        for (Map.Entry<String, Float> mngrNm : allCreditsPerClient.entrySet()) {
+                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                        }
+                    }
+                    break;
                 case 8:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listPaymentsPerClient");
+                    Response paymentsPerClient = target.request().get();
+
+                    Map<String, Float> allPaymentsPerClient = paymentsPerClient.readEntity(new GenericType<Map<String, Float>>() {
+                    });
+                    String listPaymentsPerClientOptions[] = {"List of payments per client: "};
+
+                    printMenu(header, listPaymentsPerClientOptions, true);
+                    response = target.request().get();
+                    if (allPaymentsPerClient.isEmpty())
+                        System.out.println("Without payments!");
+                    else {
+                        for (Map.Entry<String, Float> mngrNm : allPaymentsPerClient.entrySet()) {
+                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                        }
+                    }
+                    break;
+                case 9:
+                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
+                    Response balancesPerClient = target.request().get();
+
+                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<Map<String, Float>>() {
+                    });
+                    String listBalancesPerClientOptions[] = {"List of balances per client: "};
+
+                    printMenu(header, listBalancesPerClientOptions, true);
+                    response = target.request().get();
+                    if (allBalancesPerClient.isEmpty())
+                        System.out.println("Without credits or payments!");
+                    else {
+                        for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
+                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                        }
+                    }
+                    break;
+                case 13:
                     return;
             }
             Thread.sleep(250);
