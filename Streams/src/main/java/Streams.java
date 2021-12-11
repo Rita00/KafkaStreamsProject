@@ -14,6 +14,34 @@ import java.util.Properties;
 
 public class Streams {
 
+    private static double negBalance = 99999999d;
+    private static Long negId = 0l;
+
+    public static Double addToAggregator(Long aggKey, String newValue, Double aggValue){
+
+        //Parse JSON string to JSON object
+        JSONObject json = null;
+        try {
+            json = new JSONObject(newValue);
+
+            //Instantiate client from payload part of json object
+            //Which contains all the relevant data
+            JSONObject jsonObject = new JSONObject(json.get("payload").toString());
+
+            Double newBalance = Double.parseDouble(jsonObject.get("current_balance").toString());
+
+            if(newBalance < aggValue){
+                return newBalance;
+            }
+        } catch (JSONException e) {
+
+            e.printStackTrace();
+            return null;
+        }
+
+        return aggValue;
+    }
+
     public static Double convertCurrency(String jsonString) {
 
         JSONObject json = null;
@@ -232,21 +260,13 @@ public class Streams {
                 .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
 
         //---Sum every balance
-
         KStream<Long, Double> allActionsStream = builder.stream("allActions", Consumed.with(Serdes.Long(), Serdes.Double()));
-
-
         paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
-
         creditsStream
                 .mapValues((v) -> -convertCurrency(v))
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
-
-
-
-
         KTable<String, Double> dbBalancesTable = allActionsStream.
                 groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce(Double::sum, Materialized.as("aggregateBalances"));
@@ -288,7 +308,7 @@ public class Streams {
                 .windowedBy(TimeWindows.of(interval))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
         creditsPerClientMonthly
-                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k,v))
+                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, v))
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
@@ -317,11 +337,48 @@ public class Streams {
                 .to(windowedCreditPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //TO-DO
+        //---Get clients without payments for the last 2 months
+
+        //TO-DO
         //---Get the client with most negative balance
-        ValueJoiner<Double, Double, Double> valueJoinerNegBalance = ((payment, credit) -> payment - credit);
-        KTable<Long, Double> negBalance = paymentsPerClient.join(creditsPerClient,
-                valueJoinerNegBalance
-        );
+        KStream<Long, String> balanceStream = builder.stream(balancePerClientTopic);
+        KTable<Long, Double> mostNegBalance = balanceStream
+                .groupByKey()
+                .aggregate(
+                        () -> 0.0,
+                        (aggKey, newValue, aggValue) -> addToAggregator(aggKey, newValue, aggValue)
+                );
+
+        mostNegBalance
+                .mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"current_balance\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"client_id\":" + k + "," +
+                                "\"current_balance\":" + v +
+                                "}" +
+                                "}"
+                )
+                .toStream()
+                .to(mostNegBalanceTopic, Produced.with(Serdes.Long(), Serdes.String()));
+
+
 
         //TO-DO
         //---Get the manager who has made the highest revenue (the highest sum of clients payments)
