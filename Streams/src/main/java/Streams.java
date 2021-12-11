@@ -25,9 +25,9 @@ public class Streams {
         Double oldBalance = Double.parseDouble(aggValue.split(",")[1]);
 
         if(newBalance < 0 ){
-            System.out.println("Old balance" + oldBalance + " with Id " + oldClientId);
+            //System.out.println("Old balance" + oldBalance + " with Id " + oldClientId);
             if(newBalance < oldBalance){
-                System.out.println("New balance" + newBalance + " with Id " + newClientId);
+              // System.out.println("New balance" + newBalance + " with Id " + newClientId);
                 return (newClientId) + "," + (newBalance);
             }
         }
