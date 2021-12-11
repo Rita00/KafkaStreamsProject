@@ -27,7 +27,7 @@ public class Streams {
         if(newBalance < 0 ){
             System.out.println("Old balance" + oldBalance + " with Id " + oldClientId);
             if(newBalance < oldBalance){
-                System.out.println("New balance" + newBalance + " with Id " + newClientId;
+                System.out.println("New balance" + newBalance + " with Id " + newClientId);
                 return (newClientId) + "," + (newBalance);
             }
         }
