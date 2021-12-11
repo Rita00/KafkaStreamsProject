@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Streams {
+
     public static Double convertCurrency(String jsonString) {
 
         JSONObject json = null;
@@ -204,9 +205,8 @@ public class Streams {
                 .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
 
 
-
         //---Sum every payment
-        KTable<String, Double> dbPaymentsTable = creditsStream
+        KTable<String, Double> dbPaymentsTable = paymentsStream
                 .mapValues((v) -> convertCurrency(v))
                 .groupBy((k, v) -> "allPayments", Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregatePayments"));
@@ -242,10 +242,24 @@ public class Streams {
 
 
         //---Sum every balance
-        KTable<String, Double> dbBalancesTable = creditsStream
+
+        KStream<Long, Double> allActionsStream = builder.stream("allActions", Consumed.with(Serdes.Long(), Serdes.Double()));
+
+
+        paymentsStream
                 .mapValues((v) -> convertCurrency(v))
-                .groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateBalances"));
+                .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
+
+        creditsStream
+                .mapValues((v) -> -convertCurrency(v))
+                .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
+
+
+
+
+        KTable<String, Double> dbBalancesTable = allActionsStream.
+                groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
+                .reduce(Double::sum, Materialized.as("aggregateBalances"));
 
         dbBalancesTable
                 .mapValues((k, v) ->
@@ -279,42 +293,42 @@ public class Streams {
 
         //---Total credit per client for the last month (tumbling window)
 
-        Duration interval = Duration.ofDays(30);
-
-        KTable<Windowed<Long>, Double> creditsPerClientMonthly = creditsStream
-                .mapValues((v) -> convertCurrency(v))
-                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .windowedBy(TimeWindows.of(interval))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
-
-        creditsPerClientMonthly
-                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k,v))
-                .mapValues((k, v) ->
-                        "{" +
-                                "\"schema\":{" +
-                                "\"type\":\"struct\"," +
-                                "\"fields\":[" +
-                                "{" +
-                                "\"type\":\"int64\"," +
-                                "\"optional\":false," +
-                                "\"field\":\"client_id\"" +
-                                "}," +
-                                "{" +
-                                "\"type\":\"double\"," +
-                                "\"optional\":false," +
-                                "\"field\":\"total_credits\"" +
-                                "}" +
-                                "]," +
-                                "\"optional\":false," +
-                                "\"name\":\"total data\"" +
-                                "}," +
-                                "\"payload\":{" +
-                                "\"client_id\":" + k + "," +
-                                "\"total_credits_lastmonth\":" + v +
-                                "}" +
-                                "}"
-                )
-                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
+//        Duration interval = Duration.ofDays(30);
+//
+//        KTable<Windowed<Long>, Double> creditsPerClientMonthly = creditsStream
+//                .mapValues((v) -> convertCurrency(v))
+//                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
+//                .windowedBy(TimeWindows.of(interval))
+//                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
+//
+//        creditsPerClientMonthly
+//                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, v))
+//                .mapValues((k, v) ->
+//                        "{" +
+//                                "\"schema\":{" +
+//                                "\"type\":\"struct\"," +
+//                                "\"fields\":[" +
+//                                "{" +
+//                                "\"type\":\"int64\"," +
+//                                "\"optional\":false," +
+//                                "\"field\":\"client_id\"" +
+//                                "}," +
+//                                "{" +
+//                                "\"type\":\"double\"," +
+//                                "\"optional\":false," +
+//                                "\"field\":\"total_credits\"" +
+//                                "}" +
+//                                "]," +
+//                                "\"optional\":false," +
+//                                "\"name\":\"total data\"" +
+//                                "}," +
+//                                "\"payload\":{" +
+//                                "\"client_id\":" + k + "," +
+//                                "\"total_credits_lastmonth\":" + v +
+//                                "}" +
+//                                "}"
+//                )
+//                .to(rTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //TO-DO
         //---Get the client with most negative balance
@@ -324,8 +338,7 @@ public class Streams {
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
-
+        streams.cleanUp();
         System.out.println("Reading stream from topic " + cTopic);
-
     }
 }
