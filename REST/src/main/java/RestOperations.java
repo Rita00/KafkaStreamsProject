@@ -232,7 +232,7 @@ public class RestOperations {
     @GET
     @Path("listClientHighestDebt")
     public Long ListClientHighestDebt() {
-        Query q = em.createQuery("FROM mostNegBalance mnb");
+        Query q = em.createQuery("FROM MostNegBalance mnb");
         try {
             MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
             return clientId.getValue();

@@ -1,3 +1,5 @@
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
@@ -9,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Properties;
 
 
@@ -62,7 +65,7 @@ public class Streams {
         String creditsPerClientTopic = "creditsperclient";
         String balancePerClientTopic = "balanceperclient";
         String totalResultsTopic = "totalresults";
-        String mostNegBalanceTopic = "mostNegBalance";
+        String mostNegBalanceTopic = "mostnegbalance";
 
         //Set properties
         java.util.Properties props = new Properties();
@@ -377,6 +380,9 @@ public class Streams {
         //---(the highest sum of clients payments)
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
+        ArrayList<NewTopic> topics = new ArrayList<>();
+        topics.add(new NewTopic("allActions", 1, Short.parseShort("1")));
+        AdminClient.create(props).createTopics(topics);
         streams.start();
 
         System.out.println("Reading stream from topic " + cTopic);

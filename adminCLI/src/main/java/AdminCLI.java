@@ -306,7 +306,7 @@ public class AdminCLI {
                     if (totalBalances == 0)
                         System.out.println("Without credits or payments!");
                     else {
-                        System.out.println("Total payments: " + totalBalances);
+                        System.out.println("Total balances: " + totalBalances);
                     }
                     break;
                 case 13:
