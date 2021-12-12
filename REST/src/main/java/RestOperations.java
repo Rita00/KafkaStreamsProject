@@ -79,8 +79,8 @@ public class RestOperations {
 
     @GET
     @Path("/listClients")
-    public Map<Integer, String> ListClients() {
-        Map<Integer, String> allClientsInfo = new HashMap<>();
+    public Map<Long, String> ListClients() {
+        Map<Long, String> allClientsInfo = new HashMap<>();
         try {
             TypedQuery<Person> clients = em.createQuery("FROM Person c", Person.class);
 
@@ -231,13 +231,26 @@ public class RestOperations {
 
     @GET
     @Path("listClientHighestDebt")
-    public Long ListClientHighestDebt() {
+    public Map<String, Object> ListClientHighestDebt() {
+        Map<String, Object> clientHighestDebt = new HashMap<>();
         Query q = em.createQuery("FROM MostNegBalance mnb");
+        System.out.println("Aqui0");
         try {
             MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
-            return clientId.getClient_id();
+            System.out.println("Aqui1");
+            Query p = em.createQuery("FROM Person p WHERE p.id = :id");
+            System.out.println("Aqui2");
+            p.setParameter("id", clientId.getClient_id());
+            System.out.println("Highest DebtID: " + clientId);
+            Person person = (Person) p.getSingleResult();
+            System.out.println("Highest Debt Person name: " + person.getName());
+            System.out.println("Highest Debt current balance: " + clientId.getCurrent_balance());
+            clientHighestDebt.put("name", person.getName());
+            clientHighestDebt.put("current_balance", clientId.getCurrent_balance());
+            System.out.println("Highest Debt Map: " + clientHighestDebt.get("name") + " - " + clientHighestDebt.get("current_balance"));
+            return clientHighestDebt;
         } catch (NoResultException e) {
-            return 0l;
+            return clientHighestDebt;
         }
     }
 }

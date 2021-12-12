@@ -313,16 +313,18 @@ public class AdminCLI {
                     target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
                     Response clientId = target.request().get();
 
-                    Long clientIdLong = clientId.readEntity(Long.class);
+
+                    Map<String, Object> clientInfo = clientId.readEntity(new GenericType<>() {
+                    });
 
                     String highestDebInfo[] = {"Client with Highest Debt: "};
 
                     printMenu(header, highestDebInfo, true);
 
-                    if (clientIdLong == 0)
+                    if (clientInfo.isEmpty())
                         System.out.println("No client found");
                     else {
-                        System.out.println("Client with most negative balance: " + clientIdLong);
+                        System.out.println("Client with most negative balance: " + clientInfo.get("name").toString() + " - " + Double.parseDouble(clientInfo.get("current_balance").toString()) + "€");
                     }
                     break;
                 case 14:
