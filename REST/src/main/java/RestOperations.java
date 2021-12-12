@@ -411,7 +411,7 @@ public class RestOperations {
         Map<Long, String> noPayers = new HashMap<>();
         try {
             //Get all windowed credits per client from database
-            TypedQuery<NoPayments> noPayments = em.createQuery("FROM NoPayments np WHERE np.number_payments_last_twomonths = 0", NoPayments.class);
+            TypedQuery<NoPayments> noPayments = em.createQuery("FROM NoPayments np WHERE np.paid = false", NoPayments.class);
             List<NoPayments> noPaymentsList = noPayments.getResultList();
 
             //If there are no credits per client in the database

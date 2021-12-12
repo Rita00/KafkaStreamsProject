@@ -9,29 +9,29 @@ public class NoPayments {
     @Id
     private long client_id;
 
-    private long number_payments_last_twomonths;
+    private boolean paid;
 
     public NoPayments() {
     }
 
-    public NoPayments(int client_id, int number_payments_last_twomonths) {
+    public NoPayments(long client_id, boolean paid) {
         this.client_id = client_id;
-        this.number_payments_last_twomonths = number_payments_last_twomonths;
+        this.paid = paid;
     }
 
     public long getClient_id() {
         return client_id;
     }
 
-    public void setClient_id(int client_id) {
+    public void setClient_id(long client_id) {
         this.client_id = client_id;
     }
 
-    public long getNumber_payments_last_twomonths() {
-        return number_payments_last_twomonths;
+    public boolean isPaid() {
+        return paid;
     }
 
-    public void setNumber_payments_last_twomonths(long number_payments_last_twomonths) {
-        this.number_payments_last_twomonths = number_payments_last_twomonths;
+    public void setPaid(boolean paid) {
+        this.paid = paid;
     }
 }
