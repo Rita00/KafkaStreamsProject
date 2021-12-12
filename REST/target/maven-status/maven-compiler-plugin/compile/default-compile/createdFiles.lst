@@ -1,5 +1,6 @@
 RestOperations.class
 ApplicationConfig.class
+Entities/BestRevenue.class
 Entities/TotalResults.class
 Entities/MostNegBalance.class
 Entities/CreditsPerClient.class

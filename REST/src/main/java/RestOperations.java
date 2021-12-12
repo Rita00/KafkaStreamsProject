@@ -29,7 +29,7 @@ public class RestOperations {
             System.out.println("Manager ID: " + clientsProp.get("managerID").toString());
             p = new Person(clientsProp.get("name").toString());
 
-            int managerID = Integer.parseInt(clientsProp.get("managerID").toString());
+            long managerID = Long.parseLong(clientsProp.get("managerID").toString());
             System.out.println("Int ManagerID: " + managerID);
             Manager m = em.find(Manager.class, managerID);
             p.setManager(m);
@@ -97,8 +97,8 @@ public class RestOperations {
 
     @GET
     @Path("/listManagers")
-    public Map<Integer, String> ListManagers() {
-        Map<Integer, String> allManagersInfo = new HashMap<>();
+    public Map<Long, String> ListManagers() {
+        Map<Long, String> allManagersInfo = new HashMap<>();
         try {
             TypedQuery<Manager> managers = em.createQuery("FROM Manager mn", Manager.class);
             List<Manager> allManagers = managers.getResultList();
@@ -234,20 +234,13 @@ public class RestOperations {
     public Map<String, Object> ListClientHighestDebt() {
         Map<String, Object> clientHighestDebt = new HashMap<>();
         Query q = em.createQuery("FROM MostNegBalance mnb");
-        System.out.println("Aqui0");
         try {
             MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
-            System.out.println("Aqui1");
             Query p = em.createQuery("FROM Person p WHERE p.id = :id");
-            System.out.println("Aqui2");
             p.setParameter("id", clientId.getClient_id());
-            System.out.println("Highest DebtID: " + clientId);
             Person person = (Person) p.getSingleResult();
-            System.out.println("Highest Debt Person name: " + person.getName());
-            System.out.println("Highest Debt current balance: " + clientId.getCurrent_balance());
             clientHighestDebt.put("name", person.getName());
             clientHighestDebt.put("current_balance", clientId.getCurrent_balance());
-            System.out.println("Highest Debt Map: " + clientHighestDebt.get("name") + " - " + clientHighestDebt.get("current_balance"));
             return clientHighestDebt;
         } catch (NoResultException e) {
             return clientHighestDebt;
