@@ -11,7 +11,7 @@ import java.util.*;
 @SuppressWarnings({"DuplicatedCode", "ResultOfMethodCallIgnored", "IfStatementWithIdenticalBranches"})
 public class AdminCLI {
 
-    public static void printMenu(String menuHeader, String[] menuOptions) {
+    public static void printMenu(String menuHeader, String[] menuOptions, boolean isMessage, String input) {
         //Clear screen
         System.out.print("\033[H\033[2J");
         System.out.flush();
@@ -25,7 +25,9 @@ public class AdminCLI {
             System.out.println(opt);
         }
 
-        System.out.print("Choose an option: ");
+        if(!isMessage){
+            System.out.print(input);
+        }
     }
 
 
@@ -38,23 +40,23 @@ public class AdminCLI {
 
         //Main menu options
         String[] mainMenuOptions = {
-                "1 - Add Manager",
-                "2 - Add Person",
-                "3 - Add Currency",
-                "4 - List Managers",
-                "5 - List Clients",
-                "6 - List Currencies",
-                "7 - Show credits per client",
-                "8 - Show payments per client",
-                "9 - Show balances per client",
-                "10 - Show total credits",
-                "11 - Show total payments",
-                "12 - Show total balances",
-                "13 - Show the bill per client for the last month",
-                "14 - Show clients with no payments for the last two months",
-                "15 - Show client with highest debt",
-                "16 - Show the manager with the highest revenue",
-                "17 - Exit"
+                "1 -> Add Manager",
+                "2 -> Add Person",
+                "3 -> Add Currency",
+                "4 -> List Managers",
+                "5 -> List Clients",
+                "6 -> List Currencies",
+                "7 -> Show credits per client",
+                "8 -> Show payments per client",
+                "9 -> Show balances per client",
+                "10 -> Show total credits",
+                "11 -> Show total payments",
+                "12 -> Show total balances",
+                "13 -> Show the bill per client for the last month",
+                "14 -> Show clients with no payments for the last two months",
+                "15 -> Show client with highest debt",
+                "16 -> Show the manager with the highest revenue",
+                "17 -> Exit"
         };
 
         int opt;
@@ -62,7 +64,7 @@ public class AdminCLI {
         while (true) {
 
             //Print menu header and options
-            printMenu("Main Menu", mainMenuOptions);
+            printMenu("Main Menu", mainMenuOptions, false, "Choose option: ");
 
             //Validate input
             try {
@@ -92,11 +94,11 @@ public class AdminCLI {
                     //To add manager only the name is needed
                     String[] addManagerOptions = {
                             "Insert manager name: ",
-                            "[1] - Go back"
+                            "[1] -> Go back"
                     };
 
                     //Print menu header and options
-                    printMenu("Add Manager Menu", addManagerOptions);
+                    printMenu("Add Manager Menu", addManagerOptions, false, "Choose option or insert name: ");
 
                     String managerName;
 
@@ -109,10 +111,10 @@ public class AdminCLI {
                             break;
                         } else {
                             //Try again
-                            System.out.println("Please use a valid number from 1 to " + mainMenuOptions.length);
+                            System.out.println("Please use a valid number from 1 to " + 1);
                             System.out.println("Press enter to continue...");
                             System.in.read();
-                            continue;
+                            break;
                         }
                     } catch (Exception ex) {
                         //Get the name
@@ -146,10 +148,10 @@ public class AdminCLI {
 
                     String[] addClientOptions = {
                             "Insert client name: ",
-                            "[1] - Go back"
+                            "[1] -> Go back"
                     };
 
-                    printMenu("Add Client Menu", addClientOptions);
+                    printMenu("Add Client Menu", addClientOptions, false, "Choose option or insert name: ");
 
                     String clientName;
                     try {
@@ -161,7 +163,7 @@ public class AdminCLI {
                             break;
                         } else {
                             //Try again
-                            System.out.println("Please use a valid number from 1 to " + mainMenuOptions.length);
+                            System.out.println("Please use a valid number from 1 to " + 1);
                             System.out.println("Press enter to continue...");
                             System.in.read();
                             continue;
@@ -175,19 +177,21 @@ public class AdminCLI {
                     Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
 
                     String[] addClientOptionsChooseManager = {
-                            "Please choose a manager: "
+                            "Please choose a manager for the client: "
                     };
-
-                    printMenu("Add Client Menu", addClientOptionsChooseManager);
 
                     Response addClientResponseManagers = managerTarget.request().get();
                     Map<Integer, String> managerNames = addClientResponseManagers.readEntity(new GenericType<>() {
                     });
 
+                    printMenu("Add Client Menu", addClientOptionsChooseManager, true, "");
+
                     List<Integer> managerMapKeys = new ArrayList<>(managerNames.keySet());
                     for (int i = 1; i <= managerNames.keySet().size(); i++) {
-                        System.out.println(i + " - " + managerNames.get(managerMapKeys.get(i - 1)));
+                        System.out.println(i + " -> " + managerNames.get(managerMapKeys.get(i - 1)));
                     }
+
+                    System.out.print("Please choose an option: ");
 
                     int index;
                     try {
@@ -211,9 +215,13 @@ public class AdminCLI {
                     clientsProp.put("managerID", managerMapKeys.get(index - 1));
 
                     Response addClientResponseClients = clientTarget.request().post(inputClient);
-                    System.out.println(addClientResponseClients.readEntity(String.class));
-                    addClientResponseClients.close();
 
+                    System.out.println(addClientResponseClients.readEntity(String.class));
+
+                    System.out.println("Press enter continue...");
+                    System.in.read();
+
+                    addClientResponseClients.close();
 
                     break;
 
@@ -224,11 +232,10 @@ public class AdminCLI {
 
                     String[] addCurrencyOptions = {
                             "Insert currency name and exchange rate (should be float) separated by a single comma",
-                            "[1] - Go Back"
+                            "[1] -> Go Back"
                     };
 
-                    printMenu("Add Currency Menu", addCurrencyOptions);
-
+                    printMenu("Add Currency Menu", addCurrencyOptions, false, "Choose option or insert coin: ");
 
                     String currencyInfo;
                     try {
@@ -270,6 +277,9 @@ public class AdminCLI {
 
                         System.out.println(addCurrencyResponse.readEntity(String.class));
 
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+
                         addCurrencyResponse.close();
                     }
                     break;
@@ -281,7 +291,7 @@ public class AdminCLI {
 
                     String[] listManagerOptions = {"List of Managers: "};
 
-                    printMenu("List Managers Menu", listManagerOptions);
+                    printMenu("List Managers Menu", listManagerOptions, true, "");
 
                     if (allManagers.isEmpty()) {
                         System.out.println("There are no managers.\nPlease add some...\nPress enter continue...");
@@ -289,7 +299,7 @@ public class AdminCLI {
                     } else {
                         List<Integer> allManagersKeys = new ArrayList<>(allManagers.keySet());
                         for (int i = 1; i <= allManagers.keySet().size(); i++) {
-                            System.out.println(i + " - " + allManagers.get(allManagersKeys.get(i - 1)));
+                            System.out.println(i + " -> " + allManagers.get(allManagersKeys.get(i - 1)));
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
@@ -303,7 +313,7 @@ public class AdminCLI {
 
                     String[] listClientOptions = {"List of clients: "};
 
-                    printMenu("List Clients Menu", listClientOptions);
+                    printMenu("List Clients Menu", listClientOptions, true, "");
 
                     if (allClients.isEmpty()) {
                         System.out.println("Press enter continue...");
@@ -311,7 +321,7 @@ public class AdminCLI {
                     } else {
                         List<Integer> allClientsKeys = new ArrayList<>(allClients.keySet());
                         for (int i = 1; i <= allClients.keySet().size(); i++) {
-                            System.out.println(i + " - " + allClients.get(allClientsKeys.get(i - 1)));
+                            System.out.println(i + " -> " + allClients.get(allClientsKeys.get(i - 1)));
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
@@ -325,7 +335,7 @@ public class AdminCLI {
 
                     String[] listCurrenciesOptions = {"List of currencies: "};
 
-                    printMenu("List Currencies Menu", listCurrenciesOptions);
+                    printMenu("List Currencies Menu", listCurrenciesOptions, true, "");
 
                     if (allCurrencies.isEmpty()) {
                         System.out.println("Press enter continue...");
@@ -346,14 +356,14 @@ public class AdminCLI {
 
                     String[] listCreditsPerClientOptions = {"List of credits per client: "};
 
-                    printMenu("Credits Menu", listCreditsPerClientOptions);
+                    printMenu("Credits Menu", listCreditsPerClientOptions, true, "");
 
                     if (allCreditsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no credits\nPress enter continue...");
                         System.in.read();
                     } else {
                         for (Map.Entry<String, Float> mngrNm : allCreditsPerClient.entrySet()) {
-                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                            System.out.println(mngrNm.getKey() + " -> " + mngrNm.getValue());
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
@@ -368,13 +378,13 @@ public class AdminCLI {
 
                     String[] listPaymentsPerClientOptions = {"List of payments per client: "};
 
-                    printMenu("Payments Menu", listPaymentsPerClientOptions);
+                    printMenu("Payments Menu", listPaymentsPerClientOptions, true, "");
                     if (allPaymentsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
                     } else {
                         for (Map.Entry<String, Float> mngrNm : allPaymentsPerClient.entrySet()) {
-                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                            System.out.println(mngrNm.getKey() + " -> " + mngrNm.getValue());
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
@@ -388,13 +398,13 @@ public class AdminCLI {
 
                     String[] listBalancesPerClientOptions = {"List of balances per client: "};
 
-                    printMenu("Balances Menu", listBalancesPerClientOptions);
+                    printMenu("Balances Menu", listBalancesPerClientOptions, true, "");
                     if (allBalancesPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
                     } else {
                         for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
-                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                            System.out.println(mngrNm.getKey() + " -> " + mngrNm.getValue());
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
@@ -408,7 +418,7 @@ public class AdminCLI {
 
                     String[] TotalCreditsInfo = {""};
 
-                    printMenu("Total Credits Menu", TotalCreditsInfo);
+                    printMenu("Total Credits Menu", TotalCreditsInfo, true, "");
 
                     if (totalCredits == 0) {
                         System.out.println("Something went wrong there are no total credits\nPress enter continue...");
@@ -427,7 +437,7 @@ public class AdminCLI {
 
                     String[] TotalPaymentsInfo = {""};
 
-                    printMenu("Total Payments Menu", TotalPaymentsInfo);
+                    printMenu("Total Payments Menu", TotalPaymentsInfo, true, "");
 
                     if (totalPayments == 0) {
                         System.out.println("Something went wrong there are no total payments\nPress enter continue...");
@@ -446,7 +456,7 @@ public class AdminCLI {
 
                     String[] TotalBalancesInfo = {""};
 
-                    printMenu("Total Balance Menu", TotalBalancesInfo);
+                    printMenu("Total Balance Menu", TotalBalancesInfo, true, "");
 
                     if (totalBalances == 0) {
                         System.out.println("Something went wrong there are no total balances\nPress enter continue...");
@@ -464,13 +474,13 @@ public class AdminCLI {
                     Map<Long, Double> allBillsPerClient = billPerClient.readEntity(new GenericType<>() {});
                     String[] listBillPerClientOptions = {"List of bills per client for the last month: "};
 
-                    printMenu("Bills Menu", listBillPerClientOptions);
+                    printMenu("Bills Menu", listBillPerClientOptions, true, "");
                     if (allBillsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
                     } else {
                         for (Map.Entry<Long, Double> mngrNm : allBillsPerClient.entrySet()) {
-                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                            System.out.println(mngrNm.getKey() + " -> " + mngrNm.getValue());
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
@@ -487,15 +497,13 @@ public class AdminCLI {
 
                     String[] highestDebInfo = {"Client with Highest Debt: "};
 
-                    printMenu("header", highestDebInfo);
-
-                    System.out.println(clientInfo.get("name"));
+                    printMenu("header", highestDebInfo, true, "");
 
                     if (clientInfo.isEmpty()) {
                         System.out.println("Something went wrong there are no client found\nPress enter continue...");
                         System.in.read();
                     } else {
-                        System.out.println("Client with most negative balance: " + clientInfo.get("name").toString() + " - " + Double.parseDouble(clientInfo.get("current_balance").toString()) + "€");
+                        System.out.println("Client name: " + clientInfo.get("name").toString() + " with balance: " + Double.parseDouble(clientInfo.get("current_balance").toString()) + "€");
 
                         System.out.println("Press enter continue...");
                         System.in.read();
