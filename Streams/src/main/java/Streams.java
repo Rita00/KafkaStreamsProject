@@ -29,7 +29,7 @@ public class Streams {
         double oldBalance = Double.parseDouble(aggValue.split(",")[1]);
 
         //If the client with the highest debt remains the same but the balance has changed
-        if (newClientId == oldClientId && newBalance > oldBalance) {
+        if (newClientId == oldClientId && newBalance > oldBalance && newBalance < 0) {
             //Update it
             return (newClientId) + "," + (newBalance);
         }
