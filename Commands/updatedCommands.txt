@@ -6,7 +6,7 @@ bin/zookeeper-server-start.sh config/zookeeper.properties
 #Server
 bin/kafka-server-start.sh config/server.properties
 #DB Connectors
-bin/connect-standalone.sh config/connect-standalone.properties ../../workspace/Connectors/get-clients.properties ../../workspace/Connectors/sink-paymentsPerClients.properties ../../workspace/Connectors/get-currencies.properties ../../workspace/Connectors/sink-creditsPerClients.properties ../../workspace/Connectors/sink-balancePerClients.properties ../../workspace/Connectors/sink-windowedCreditPerClient.properties ../../workspace/Connectors/sink-totalResults.properties ../../workspace/Connectors/sink-mostDebt.properties
+bin/connect-standalone.sh config/connect-standalone.properties ../../workspace/Connectors/get-clients.properties ../../workspace/Connectors/sink-paymentsPerClients.properties ../../workspace/Connectors/get-currencies.properties ../../workspace/Connectors/sink-creditsPerClients.properties ../../workspace/Connectors/sink-balancePerClients.properties ../../workspace/Connectors/sink-windowedCreditPerClient.properties ../../workspace/Connectors/sink-totalResults.properties ../../workspace/Connectors/sink-mostDebt.properties ../../workspace/Connectors/sink-bestRevenue.properties
 
 #---Others
 #Create topic
