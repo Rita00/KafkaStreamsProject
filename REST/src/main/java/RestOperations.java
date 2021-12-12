@@ -125,8 +125,7 @@ public class RestOperations {
 
             //If there are no clients in the database
             if (allClients.isEmpty()) {
-                //Added message to the hashmap and return
-                allClientsInfo.put(-1L, "No clients found!\nPlease add some...");
+                //Return empty
                 return allClientsInfo;
             }
 
@@ -139,8 +138,8 @@ public class RestOperations {
             return allClientsInfo;
         } catch (Exception e) {
             e.printStackTrace();
-            //Something went wrong
-            return null;
+            //Something went wrong return empty
+            return allClientsInfo;
         }
     }
 
@@ -156,8 +155,7 @@ public class RestOperations {
 
             //If there are no managers in the database
             if (allManagers.isEmpty()) {
-                //Added message to the hashmap and return
-                allManagersInfo.put(-1, "No managers found!\nPlease add some...");
+                //Return empty
                 return allManagersInfo;
             }
 
@@ -170,8 +168,8 @@ public class RestOperations {
             return allManagersInfo;
         } catch (Exception e) {
             e.printStackTrace();
-            //Something went wrong, return null
-            return null;
+            //Something went wrong, return empty
+            return allManagersInfo;
         }
     }
 
@@ -187,8 +185,7 @@ public class RestOperations {
 
             //If there are no currencies in the database
             if (allCurrencies.isEmpty()) {
-                //Added message to the hashmap and return
-                allCurrenciesInfo.put("No currencies found!\nPlease add some...", -1D);
+                //Return empty
                 return allCurrenciesInfo;
             }
 
@@ -200,9 +197,9 @@ public class RestOperations {
             //Return all relevant information
             return allCurrenciesInfo;
         } catch (Exception e) {
-            //Something went wrong, return null
+            //Something went wrong, return empty
             e.printStackTrace();
-            return null;
+            return allCurrenciesInfo;
         }
     }
 
@@ -218,8 +215,7 @@ public class RestOperations {
 
             //If there are no credits per client in the database
             if (allClients.isEmpty()) {
-                //Added message to the hashmap and return
-                creditsPerClient.put(-1, -1D);
+                //Return empty
                 return creditsPerClient;
             }
 
@@ -232,7 +228,7 @@ public class RestOperations {
             return creditsPerClient;
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return creditsPerClient;
         }
     }
 
@@ -248,8 +244,7 @@ public class RestOperations {
 
             //If there are no payments per client in the database
             if (allClients.isEmpty()) {
-                //Added message to the hashmap and return
-                paymentsPerClient.put(-1, -1D);
+                //Return empty
                 return paymentsPerClient;
             }
 
@@ -262,8 +257,8 @@ public class RestOperations {
             return paymentsPerClient;
         } catch (Exception e) {
             e.printStackTrace();
-            //Something went wrong, return null
-            return null;
+            //Something went wrong, return empty
+            return paymentsPerClient;
         }
     }
 
@@ -279,8 +274,7 @@ public class RestOperations {
 
             //If there are no balances per client in the database
             if (allClients.isEmpty()) {
-                //Added message to the hashmap and return
-                balancesPerClient.put(-1, -1D);
+                //Return empty
                 return balancesPerClient;
             }
 
@@ -293,8 +287,8 @@ public class RestOperations {
             return balancesPerClient;
         } catch (Exception e) {
             e.printStackTrace();
-            //Something went wrong, return null
-            return null;
+            //Something went wrong, return empty
+            return balancesPerClient;
         }
     }
 
@@ -311,8 +305,8 @@ public class RestOperations {
             //Return sum of all credits
             return credits.getValue();
         } catch (NoResultException e) {
-            //No results, return -1 to notify admin
-            return -1D;
+            //No results, return 0 to notify admin
+            return 0D;
         }
     }
 
@@ -329,8 +323,8 @@ public class RestOperations {
             //Return sum of all payments
             return payments.getValue();
         } catch (NoResultException e) {
-            //No results, return -1 to notify admin
-            return -1D;
+            //No results, return 0 to notify admin
+            return 0D;
         }
     }
 
@@ -346,8 +340,8 @@ public class RestOperations {
             //Return sum of all balances
             return balances.getValue();
         } catch (NoResultException e) {
-            //No results, return -1 to notify admin
-            return -1D;
+            //No results, return 0 to notify admin
+            return 0D;
         }
     }
 
@@ -374,9 +368,7 @@ public class RestOperations {
             //Return it
             return clientHighestDebt;
         } catch (NoResultException e) {
-            clientHighestDebt.put("name", "Something went wrong. Couldn't get client with highest debt.\nPlease try again");
-            clientHighestDebt.put("current_balance", -1);
-
+            //Return empty to notify admin
             return clientHighestDebt;
         }
     }

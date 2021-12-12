@@ -1,44 +1,43 @@
-//import Entities.Person;
-//import Entities.Currency;
-//import Entities.Manager;
-
-import data.Manager;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings({"DuplicatedCode", "ResultOfMethodCallIgnored", "IfStatementWithIdenticalBranches"})
 public class AdminCLI {
 
-    public static void printMenu(String menuHeader, String menuOptions[], boolean isMessage) {
+    public static void printMenu(String menuHeader, String[] menuOptions) {
         //Clear screen
-//        System.out.print("\033[H\033[2J");
-//        System.out.flush();
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
 
-        System.out.println("\t\t" + menuHeader);
+        //Print menu header
+        System.out.println("\t\t ##-Administration Menu-##");
+        System.out.println("\t\t\t" + menuHeader);
 
+        //Print every item in menu
         for (String opt : menuOptions) {
             System.out.println(opt);
         }
 
-        if (!isMessage) {
-            System.out.print("Choose an option: ");
-        }
+        System.out.print("Choose an option: ");
     }
 
 
-    public static void main(String[] args) throws InterruptedException, IOException {
-        Client client = ClientBuilder.newClient();
+    public static void main(String[] args) throws IOException {
+        //Build client for exposed rest
+        Client restClient = ClientBuilder.newClient();
+
+        //Scanner to handle user input
         Scanner input = new Scanner(System.in);
 
-        String mainOptions[] = {
+        //Main menu options
+        String[] mainMenuOptions = {
                 "1 - Add Manager",
                 "2 - Add Person",
                 "3 - Add Currency",
@@ -51,288 +50,468 @@ public class AdminCLI {
                 "10 - Show total credits",
                 "11 - Show total payments",
                 "12 - Show total balances",
-                "13 - Show client with highest debt",
-                "14 - Exit"
+                "13 - Show the bill per client for the last month",
+                "14 - Show clients with no payments for the last two months",
+                "15 - Show client with highest debt",
+                "16 - Show the manager with the highest revenue",
+                "17 - Exit"
         };
 
-        String header = "Administration Menu";
-
         int opt;
+        WebTarget managerTarget, clientTarget, currencyTarget;
         while (true) {
-            printMenu(header, mainOptions, false);
 
-            opt = input.nextInt();
-            input.nextLine();
+            //Print menu header and options
+            printMenu("Main Menu", mainMenuOptions);
+
+            //Validate input
+            try {
+                opt = input.nextInt();
+                input.nextLine();
+
+                if (opt > mainMenuOptions.length || opt < 1) {
+                    System.out.println("Please use a valid number from 1 to " + mainMenuOptions.length);
+                    System.out.println("Press enter to continue...");
+                    System.in.read();
+                    continue;
+                }
+
+            } catch (Exception ex) {
+                input.nextLine();
+                System.out.println("Please use a valid number from 1 to " + mainMenuOptions.length);
+                System.out.println("Press enter to continue...");
+                System.in.read();
+                continue;
+            }
 
             switch (opt) {
                 case 1:
-                    WebTarget target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addManager");
+                    //Set target trough rest link
+                    managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/addManager");
 
-                    String addManagerOptions[] = {
-                            "Insert manager name: "
+                    //To add manager only the name is needed
+                    String[] addManagerOptions = {
+                            "Insert manager name: ",
+                            "[1] - Go back"
                     };
 
-                    printMenu(header, addManagerOptions, true);
-                    String managerName = input.nextLine();
+                    //Print menu header and options
+                    printMenu("Add Manager Menu", addManagerOptions);
+
+                    String managerName;
+
+                    try {
+                        //If its it then
+                        opt = input.nextInt();
+                        //Verify input
+                        if (opt == 1) {
+                            //Go back
+                            break;
+                        } else {
+                            //Try again
+                            System.out.println("Please use a valid number from 1 to " + mainMenuOptions.length);
+                            System.out.println("Press enter to continue...");
+                            System.in.read();
+                            continue;
+                        }
+                    } catch (Exception ex) {
+                        //Get the name
+                        managerName = input.nextLine();
+                    }
+
+                    //Create object
                     Entity<String> inputManager = Entity.entity(managerName, MediaType.APPLICATION_JSON);
-                    Response response = target.request().post(inputManager);
-                    String value = response.readEntity(String.class);
-                    System.out.println("RESPONSE: " + value);
-                    response.close();
+
+                    //Try to add to the database
+                    Response addManagerResponse = managerTarget.request().post(inputManager);
+
+                    //Print feedback to admin
+                    System.out.println(addManagerResponse.readEntity(String.class));
+
+                    //Close response
+                    addManagerResponse.close();
+
+                    System.out.println("Press enter to continue...");
+                    System.in.read();
+
                     break;
                 case 2:
-                    HashMap<String, Object> clientsProp = new HashMap<>();
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
-                    WebTarget get = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
+                    //Get clients
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
+                    //Get mangers
+                    managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
 
-                    String addClientOptions[] = {
-                            "Insert client name: "
+                    //Properties are client name and manager
+                    HashMap<String, Object> clientsProp = new HashMap<>();
+
+                    String[] addClientOptions = {
+                            "Insert client name: ",
+                            "[1] - Go back"
                     };
 
-                    printMenu(header, addClientOptions, true);
-                    String clientName = input.nextLine();
+                    printMenu("Add Client Menu", addClientOptions);
+
+                    String clientName;
+                    try {
+                        //If its it then
+                        opt = input.nextInt();
+                        //Verify input
+                        if (opt == 1) {
+                            //Go back
+                            break;
+                        } else {
+                            //Try again
+                            System.out.println("Please use a valid number from 1 to " + mainMenuOptions.length);
+                            System.out.println("Press enter to continue...");
+                            System.in.read();
+                            continue;
+                        }
+                    } catch (Exception ex) {
+                        //Get the name
+                        clientName = input.nextLine();
+                    }
 
                     clientsProp.put("name", clientName);
                     Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
 
-                    String addClientOptions2[] = {
+                    String[] addClientOptionsChooseManager = {
                             "Please choose a manager: "
                     };
 
-                    Response managers = get.request().get();
-                    Map<Integer, String> managerNames = managers.readEntity(new GenericType<Map<Integer, String>>() {
+                    printMenu("Add Client Menu", addClientOptionsChooseManager);
+
+                    Response addClientResponseManagers = managerTarget.request().get();
+                    Map<Integer, String> managerNames = addClientResponseManagers.readEntity(new GenericType<>() {
                     });
-                    System.out.println(managerNames);
 
-                    List keys = new ArrayList(managerNames.keySet());
+                    List<Integer> managerMapKeys = new ArrayList<>(managerNames.keySet());
                     for (int i = 1; i <= managerNames.keySet().size(); i++) {
-                        System.out.println(i + " - " + managerNames.get(keys.get(i - 1)));
-
+                        System.out.println(i + " - " + managerNames.get(managerMapKeys.get(i - 1)));
                     }
 
-                    //TODO verify if choose a correct option
-                    printMenu(header, addClientOptions2, false);
-                    int index = input.nextInt();
-                    input.nextLine();
+                    int index;
+                    try {
+                        index = input.nextInt();
+                        input.nextLine();
+                        //Verify input
+                        if (index < 1 || index > managerNames.keySet().size() + 1) {
+                            //Try again
+                            System.out.println("Please use a valid number from 1 to " + managerNames.keySet().size() + 1);
+                            System.out.println("Press enter to continue...");
+                            System.in.read();
+                            continue;
+                        }
+                    } catch (Exception ex) {
+                        System.out.println("Please use a valid number from 1 to " + managerNames.keySet().size() + 1);
+                        System.out.println("Press enter to continue...");
+                        System.in.read();
+                        continue;
+                    }
 
-                    clientsProp.put("managerID", keys.get(index - 1));
-                    System.out.println(keys.get(index - 1));
+                    clientsProp.put("managerID", managerMapKeys.get(index - 1));
 
-                    response = target.request().post(inputClient);
-                    value = response.readEntity(String.class);
-                    System.out.println("RESPONSE: " + value);
-                    response.close();
+                    Response addClientResponseClients = clientTarget.request().post(inputClient);
+                    System.out.println(addClientResponseClients.readEntity(String.class));
+                    addClientResponseClients.close();
+
+
                     break;
 
                 case 3:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/addCurrency");
+                    currencyTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/addCurrency");
 
                     HashMap<String, Object> currencyProp = new HashMap<>();
 
-                    String addCurrencyOptions[] = {
-                            "Insert currency name",
-                            "and exchange rate (should be float)",
-                            "separated by a single space"
+                    String[] addCurrencyOptions = {
+                            "Insert currency name and exchange rate (should be float) separated by a single comma",
+                            "[1] - Go Back"
                     };
-//
-                    // TODO if currencies with 2 names
-                    printMenu(header, addCurrencyOptions, true);
-                    String info = input.nextLine();
-//
-                    String currencyName = info.split(" ")[0];
-                    currencyProp.put("name", currencyName);
 
-                    Float exchangeRate = Float.parseFloat(info.split(" ")[1]);
-                    currencyProp.put("exchangeRate", exchangeRate);
+                    printMenu("Add Currency Menu", addCurrencyOptions);
 
-                    Entity<HashMap<String, Object>> inputCurrency = Entity.entity(currencyProp, MediaType.APPLICATION_JSON);
-                    response = target.request().post(inputCurrency);
-                    value = response.readEntity(String.class);
-                    System.out.println("RESPONSE: " + value);
-                    response.close();
+
+                    String currencyInfo;
+                    try {
+                        opt = input.nextInt();
+                        input.nextLine();
+                        //Verify input
+                        if (opt != 1) {
+                            //Try again
+                            System.out.println("Please use a valid number from 1 to " + 1);
+                            System.out.println("Press enter to continue...");
+                            System.in.read();
+                            continue;
+                        } else {
+                            break;
+                        }
+                    } catch (Exception ex) {
+                        currencyInfo = input.nextLine();
+                    }
+
+                    if (!currencyInfo.equals("")) {
+                        String currencyName = currencyInfo.split(",")[0];
+                        currencyProp.put("name", currencyName);
+
+                        double exchangeRate;
+
+                        try {
+                            exchangeRate = Double.parseDouble(currencyInfo.split(",")[1]);
+                        } catch (Exception e) {
+                            System.out.println("Currency exchange rate is not a float. Couldn't add currency.");
+                            System.out.println("Press enter to continue...");
+                            System.in.read();
+                            break;
+                        }
+
+                        currencyProp.put("exchangeRate", exchangeRate);
+
+                        Entity<HashMap<String, Object>> inputCurrency = Entity.entity(currencyProp, MediaType.APPLICATION_JSON);
+                        Response addCurrencyResponse = currencyTarget.request().post(inputCurrency);
+
+                        System.out.println(addCurrencyResponse.readEntity(String.class));
+
+                        addCurrencyResponse.close();
+                    }
                     break;
                 case 4:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
-                    managers = target.request().get();
-                    Map<Integer, String> allManagers = managers.readEntity(new GenericType<Map<Integer, String>>() {
-                    });
+                    managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
+                    Response managersResponse = managerTarget.request().get();
 
-                    String listManagerOptions[] = {"List of Managers: "};
+                    Map<Integer, String> allManagers = managersResponse.readEntity(new GenericType<>() {});
 
-                    printMenu(header, listManagerOptions, true);
+                    String[] listManagerOptions = {"List of Managers: "};
 
-                    if (allManagers.isEmpty())
-                        System.out.println("Sem Managers!");
-                    else {
-                        keys = new ArrayList(allManagers.keySet());
+                    printMenu("List Managers Menu", listManagerOptions);
+
+                    if (allManagers.isEmpty()) {
+                        System.out.println("There are no managers.\nPlease add some...\nPress enter continue...");
+                        System.in.read();
+                    } else {
+                        List<Integer> allManagersKeys = new ArrayList<>(allManagers.keySet());
                         for (int i = 1; i <= allManagers.keySet().size(); i++) {
-                            System.out.println(i + " - " + allManagers.get(keys.get(i - 1)));
-                            //i++;
+                            System.out.println(i + " - " + allManagers.get(allManagersKeys.get(i - 1)));
                         }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 5:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
-                    Response clients = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
+                    Response clients = clientTarget.request().get();
 
-                    Map<Integer, String> allClients = clients.readEntity(new GenericType<Map<Integer, String>>() {
-                    });
-                    String listClientOptions[] = {"List of clients: "};
+                    Map<Integer, String> allClients = clients.readEntity(new GenericType<>() {});
 
-                    printMenu(header, listClientOptions, true);
+                    String[] listClientOptions = {"List of clients: "};
 
-                    if (allClients.isEmpty())
-                        System.out.println("Sem Clientes!");
-                    else {
-                        keys = new ArrayList(allClients.keySet());
+                    printMenu("List Clients Menu", listClientOptions);
+
+                    if (allClients.isEmpty()) {
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+                    } else {
+                        List<Integer> allClientsKeys = new ArrayList<>(allClients.keySet());
                         for (int i = 1; i <= allClients.keySet().size(); i++) {
-                            System.out.println(i + " - " + allClients.get(keys.get(i - 1)));
-                            //i++;
+                            System.out.println(i + " - " + allClients.get(allClientsKeys.get(i - 1)));
                         }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
-
                     break;
                 case 6:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCurrencies");
-                    Response currencies = target.request().get();
+                    currencyTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCurrencies");
+                    Response currencies = currencyTarget.request().get();
 
-                    Map<String, Double> allCurrencies = currencies.readEntity(new GenericType<Map<String, Double>>() {
-                    });
-                    String listCurrenciesOptions[] = {"List of currencies: "};
+                    Map<String, Double> allCurrencies = currencies.readEntity(new GenericType<>() {});
 
-                    printMenu(header, listCurrenciesOptions, true);
+                    String[] listCurrenciesOptions = {"List of currencies: "};
 
-                    if (allCurrencies.isEmpty())
-                        System.out.println("Sem moedas!");
-                    else {
+                    printMenu("header", listCurrenciesOptions);
+
+                    if (allCurrencies.isEmpty()) {
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+                    } else {
                         for (Map.Entry<String, Double> mngrNm : allCurrencies.entrySet()) {
                             System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
                         }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 7:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCreditPerClient");
-                    Response creditsPerClient = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCreditPerClient");
+                    Response creditsPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allCreditsPerClient = creditsPerClient.readEntity(new GenericType<Map<String, Float>>() {
-                    });
-                    String listCreditsPerClientOptions[] = {"List of credits per client: "};
+                    Map<String, Float> allCreditsPerClient = creditsPerClient.readEntity(new GenericType<>() {});
 
-                    printMenu(header, listCreditsPerClientOptions, true);
-                    if (allCreditsPerClient.isEmpty())
-                        System.out.println("Without credits!");
-                    else {
+                    String[] listCreditsPerClientOptions = {"List of credits per client: "};
+
+                    printMenu("header", listCreditsPerClientOptions);
+
+                    if (allCreditsPerClient.isEmpty()) {
+                        System.out.println("Something went wrong there are no credits\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         for (Map.Entry<String, Float> mngrNm : allCreditsPerClient.entrySet()) {
                             System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
                         }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+
                     }
                     break;
                 case 8:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listPaymentsPerClient");
-                    Response paymentsPerClient = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listPaymentsPerClient");
+                    Response paymentsPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allPaymentsPerClient = paymentsPerClient.readEntity(new GenericType<Map<String, Float>>() {
-                    });
-                    String listPaymentsPerClientOptions[] = {"List of payments per client: "};
+                    Map<String, Float> allPaymentsPerClient = paymentsPerClient.readEntity(new GenericType<>() {});
 
-                    printMenu(header, listPaymentsPerClientOptions, true);
-                    if (allPaymentsPerClient.isEmpty())
-                        System.out.println("Without payments!");
-                    else {
+                    String[] listPaymentsPerClientOptions = {"List of payments per client: "};
+
+                    printMenu("header", listPaymentsPerClientOptions);
+                    if (allPaymentsPerClient.isEmpty()) {
+                        System.out.println("Something went wrong there are no payments\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         for (Map.Entry<String, Float> mngrNm : allPaymentsPerClient.entrySet()) {
                             System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
                         }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 9:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
-                    Response balancesPerClient = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
+                    Response balancesPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<Map<String, Float>>() {
-                    });
-                    String listBalancesPerClientOptions[] = {"List of balances per client: "};
+                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<>() {});
 
-                    printMenu(header, listBalancesPerClientOptions, true);
-                    if (allBalancesPerClient.isEmpty())
-                        System.out.println("Without credits or payments!");
-                    else {
+                    String[] listBalancesPerClientOptions = {"List of balances per client: "};
+
+                    printMenu("header", listBalancesPerClientOptions);
+                    if (allBalancesPerClient.isEmpty()) {
+                        System.out.println("Something went wrong there are no payments\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
                             System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
                         }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 10:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalCredits");
-                    Response allCredits = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalCredits");
+                    Response allCredits = clientTarget.request().get();
 
                     Double totalCredits = allCredits.readEntity(Double.class);
 
-                    String TotalCreditsInfo[] = {"List of balances per client: "};
+                    String[] TotalCreditsInfo = {"List of balances per client: "};
 
-                    printMenu(header, TotalCreditsInfo, true);
+                    printMenu("header", TotalCreditsInfo);
 
-                    if (totalCredits == 0)
-                        System.out.println("Without credits!");
-                    else {
+                    if (totalCredits == 0) {
+                        System.out.println("Something went wrong there are no total credits\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         System.out.println("Total credits: " + totalCredits);
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 11:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalPayments");
-                    Response allPayments = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalPayments");
+                    Response allPayments = clientTarget.request().get();
 
                     Double totalPayments = allPayments.readEntity(Double.class);
 
-                    String TotalPaymentsInfo[] = {"List of balances per client: "};
+                    String[] TotalPaymentsInfo = {"List of balances per client: "};
 
-                    printMenu(header, TotalPaymentsInfo, true);
+                    printMenu("header", TotalPaymentsInfo);
 
-                    if (totalPayments == 0)
-                        System.out.println("Without payments!");
-                    else {
+                    if (totalPayments == 0) {
+                        System.out.println("Something went wrong there are no total payments\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         System.out.println("Total payments: " + totalPayments);
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 12:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalBalances");
-                    Response allBalances = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalBalances");
+                    Response allBalances = clientTarget.request().get();
 
                     Double totalBalances = allBalances.readEntity(Double.class);
 
-                    String TotalBalancesInfo[] = {"List of balances per client: "};
+                    String[] TotalBalancesInfo = {"List of balances per client: "};
 
-                    printMenu(header, TotalBalancesInfo, true);
+                    printMenu("header", TotalBalancesInfo);
 
-                    if (totalBalances == 0)
-                        System.out.println("Without credits or payments!");
-                    else {
+                    if (totalBalances == 0) {
+                        System.out.println("Something went wrong there are no total balances\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         System.out.println("Total balances: " + totalBalances);
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
                 case 13:
-                    target = client.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
-                    Response clientId = target.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
+                    Response balancesPerClient = clientTarget.request().get();
+
+                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<>() {});
+                    String[] listBalancesPerClientOptions = {"List of balances per client: "};
+
+                    printMenu("header", listBalancesPerClientOptions);
+                    if (allBalancesPerClient.isEmpty()) {
+                        System.out.println("Something went wrong there are no payments\nPress enter continue...");
+                        System.in.read();
+                    } else {
+                        for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
+                            System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
+                        }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+                    }
 
 
-                    Map<String, Object> clientInfo = clientId.readEntity(new GenericType<>() {
-                    });
+                    break;
+                case 14:
+                    System.out.println("To-Do option 14");
+                    break;
+                case 15:
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
+                    Response clientId = clientTarget.request().get();
 
-                    String highestDebInfo[] = {"Client with Highest Debt: "};
+                    Map<String, Object> clientInfo = clientId.readEntity(new GenericType<>() {});
 
-                    printMenu(header, highestDebInfo, true);
+                    String[] highestDebInfo = {"Client with Highest Debt: "};
+
+                    printMenu("header", highestDebInfo);
 
                     System.out.println(clientInfo.get("name"));
 
-                    if (clientInfo.isEmpty())
-                        System.out.println("No client found");
-                    else {
+                    if (clientInfo.isEmpty()) {
+                        System.out.println("Something went wrong there are no client found\nPress enter continue...");
+                        System.in.read();
+                    } else {
                         System.out.println("Client with most negative balance: " + clientInfo.get("name").toString() + " - " + Double.parseDouble(clientInfo.get("current_balance").toString()) + "€");
+
+                        System.out.println("Press enter continue...");
+                        System.in.read();
                     }
                     break;
-                case 14:
+                case 16:
+                    System.out.println("To-Do option 16");
+                    break;
+                case 17:
+                    System.out.println("Goodbye!");
+                    return;
+                default:
                     return;
             }
-            Thread.sleep(250);
         }
     }
 }
