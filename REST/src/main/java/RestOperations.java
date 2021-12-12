@@ -235,7 +235,7 @@ public class RestOperations {
         Query q = em.createQuery("FROM MostNegBalance mnb");
         try {
             MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
-            return clientId.getValue();
+            return clientId.getClient_id();
         } catch (NoResultException e) {
             return 0l;
         }

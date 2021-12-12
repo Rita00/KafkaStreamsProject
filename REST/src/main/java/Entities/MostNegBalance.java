@@ -6,31 +6,42 @@ import javax.persistence.Id;
 @Entity
 public class MostNegBalance {
     @Id
-    private Long aggregate;
+    private String primary_key;
 
-    private Long value;
+    private long client_id;
+
+    private double current_balance;
 
     public MostNegBalance() {
     }
 
-    public MostNegBalance(Long aggregate, Long value) {
-        this.aggregate = aggregate;
-        this.value = value;
+    public MostNegBalance(String primary_key, long client_id, double current_balance) {
+        this.primary_key = primary_key;
+        this.client_id = client_id;
+        this.current_balance = current_balance;
     }
 
-    public Long getAggregate() {
-        return aggregate;
+    public String getPrimary_key() {
+        return primary_key;
     }
 
-    public void setAggregate(Long aggregate) {
-        this.aggregate = aggregate;
+    public void setPrimary_key(String primary_key) {
+        this.primary_key = primary_key;
     }
 
-    public Long getValue() {
-        return value;
+    public long getClient_id() {
+        return client_id;
     }
 
-    public void setValue(Long value) {
-        this.value = value;
+    public void setClient_id(long client_id) {
+        this.client_id = client_id;
+    }
+
+    public double getCurrent_balance() {
+        return current_balance;
+    }
+
+    public void setCurrent_balance(double current_balance) {
+        this.current_balance = current_balance;
     }
 }

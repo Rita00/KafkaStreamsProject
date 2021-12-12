@@ -21,16 +21,19 @@ public class Streams {
     private static Long negId = 0l;
 
     public static String addToAggregator(Long aggKey, String newValue, String aggValue) {
-        Long newClientId = Long.parseLong(newValue.split(",")[0]);
-        Double newBalance = Double.parseDouble(newValue.split(",")[1]);
+        long newClientId = Long.parseLong(newValue.split(",")[0]);
+        double newBalance = Double.parseDouble(newValue.split(",")[1]);
 
-        Long oldClientId = Long.parseLong(aggValue.split(",")[0]);
-        Double oldBalance = Double.parseDouble(aggValue.split(",")[1]);
+        long oldClientId = Long.parseLong(aggValue.split(",")[0]);
+        double oldBalance = Double.parseDouble(aggValue.split(",")[1]);
 
-        if(newBalance < 0 ){
+        if (newClientId == oldClientId && newBalance > oldBalance) {
+            return (newClientId) + "," + (newBalance);
+        }
+        if (newBalance < 0) {
             //System.out.println("Old balance" + oldBalance + " with Id " + oldClientId);
-            if(newBalance < oldBalance){
-              // System.out.println("New balance" + newBalance + " with Id " + newClientId);
+            if (newBalance < oldBalance) {
+                // System.out.println("New balance" + newBalance + " with Id " + newClientId);
                 return (newClientId) + "," + (newBalance);
             }
         }
@@ -341,36 +344,42 @@ public class Streams {
         //---Get the client with most negative balance
         joined
                 .toStream()
-                .map((k, v) -> new KeyValue<Long, String>(1l, k + "," + v))
+                .map((k, v) -> new KeyValue<Long, String>(1L, k + "," + v))
                 .groupByKey()
                 .aggregate(
                         () -> "0,0",
                         (aggKey, newValue, aggValue) -> addToAggregator(aggKey, newValue, aggValue)
                 )
                 .toStream()
-                .mapValues(v -> v.split(",")[0])
+//                .mapValues(v -> v.split(",")[0])
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
                                 "\"type\":\"struct\"," +
                                 "\"fields\":[" +
                                 "{" +
-                                "\"type\":\"int64\"," +
+                                "\"type\":\"string\"," +
                                 "\"optional\":false," +
-                                "\"field\":\"aggregate\"" +
+                                "\"field\":\"primary_key\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"double\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"current_balance\"" +
                                 "}," +
                                 "{" +
                                 "\"type\":\"int64\"," +
                                 "\"optional\":false," +
-                                "\"field\":\"value\"" +
+                                "\"field\":\"client_id\"" +
                                 "}" +
                                 "]," +
                                 "\"optional\":false," +
                                 "\"name\":\"mostneg\"" +
                                 "}," +
                                 "\"payload\":{" +
-                                "\"aggregate\":\"" + k + "\"," +
-                                "\"value\":" + v +
+                                "\"primary_key\":\"highestDebt\"," +
+                                "\"client_id\":" + v.split(",")[0] +
+                                ", \"current_balance\":" + v.split(",")[1] +
                                 "}" +
                                 "}"
                 )
