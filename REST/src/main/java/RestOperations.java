@@ -379,11 +379,11 @@ public class RestOperations {
         //Create map to hold all relevant information
         Map<Long, Double> billPerClient = new HashMap<>();
         try {
-            //Get all balances per client from database
+            //Get all windowed credits per client from database
             TypedQuery<WindowedCreditPerClient> billPerClients = em.createQuery("FROM WindowedCreditPerClient wcpc", WindowedCreditPerClient.class);
             List<WindowedCreditPerClient> billPerClientsList = billPerClients.getResultList();
 
-            //If there are no balances per client in the database
+            //If there are no credits per client in the database
             if (billPerClientsList.isEmpty()) {
                 //Return empty
                 return billPerClient;
