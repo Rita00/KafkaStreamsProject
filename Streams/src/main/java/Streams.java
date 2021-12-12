@@ -32,7 +32,8 @@ public class Streams {
         if (newClientId == oldClientId && newBalance > oldBalance && newBalance < 0) {
             //Update it
             return (newClientId) + "," + (newBalance);
-        }
+        } else if (newClientId == oldClientId && newBalance > oldBalance && newBalance > 0)
+            return "0,0";
 
         //Debt is only if balance is negative
         if (newBalance < 0) {
@@ -186,11 +187,12 @@ public class Streams {
                 .to(paymentsPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //---Balance per client
-        ValueJoiner<Double, Double, Double> valueJoiner = ((payment, credit) -> payment - credit);
-        KTable<Long, Double> joined = paymentsPerClient.join(creditsPerClient,
-                valueJoiner
-        );
-        joined
+        KStream<Long, Double> allActionsStream = builder.stream("allActions", Consumed.with(Serdes.Long(), Serdes.Double()));
+        allActionsStream
+                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
+                .reduce((v1, v2) -> v1 + v2)
+
+//
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
@@ -289,12 +291,11 @@ public class Streams {
                 .to(totalResultsTopic, Produced.with(Serdes.String(), Serdes.String()));
 
         //---Sum every balance
-        KStream<Long, Double> allActionsStream = builder.stream("allActions", Consumed.with(Serdes.Long(), Serdes.Double()));
         paymentsStream
                 .mapValues(Streams::convertCurrency)
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
         creditsStream
-                .mapValues(Streams::convertCurrency)
+                .mapValues((v) -> -convertCurrency(v))
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
         KTable<String, Double> dbBalancesTable = allActionsStream.
                 groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
@@ -408,7 +409,14 @@ public class Streams {
                 .to(noPaymentsTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //---Get the client with most negative balance
-        joined
+//        ValueJoiner<Double, Double, Double> valueJoiner = ((payment, credit) -> payment - credit);
+//        KTable<Long, Double> joined = paymentsPerClient.join(creditsPerClient,
+//                valueJoiner
+//        );
+
+        allActionsStream
+                .groupByKey()
+                .reduce((v1, v2) -> v1 + v2)
                 .toStream()
                 .map((k, v) -> new KeyValue<>(1L, k + "," + v))
                 .groupByKey()

@@ -194,7 +194,7 @@ public class Clients {
             credClient = clients.get(rand.nextInt(clients.size()));
 
             //Produce random credit
-            cred = rand.nextFloat() * (20f - 1f);
+            cred = rand.nextFloat() * (100f - 1f);
 
             //Choose random currency
             credCurr = currencies.get(rand.nextInt(currencies.size()));
@@ -220,9 +220,9 @@ public class Clients {
             payClient = clients.get(rand.nextInt(clients.size()));
 
             //Leave a client without payments to test functionality 14
-            while (payClient.getId() == 4) {
-                payClient = clients.get(rand.nextInt(clients.size()));
-            }
+//            while (payClient.getId() == 4) {
+//                payClient = clients.get(rand.nextInt(clients.size()));
+//            }
 
             //Choose
             payCurr = currencies.get(rand.nextInt(currencies.size()));

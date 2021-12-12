@@ -352,7 +352,7 @@ public class RestOperations {
         Map<String, Object> clientHighestDebt = new HashMap<>();
 
         //Get client with the highest debt
-        Query q = em.createQuery("FROM MostNegBalance mnb");
+        Query q = em.createQuery("FROM MostNegBalance mnb where mnb.current_balance < 0");
         try {
             MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
 
