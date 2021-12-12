@@ -85,12 +85,12 @@ public class Clients {
 
         //Fetch all data from the DBInfoTopics
         System.out.println("Getting clients from " + dbClientsTopic);
-        do{
+        do {
             dClients = Duration.ofSeconds(30);
             clientRecords = dbClients.poll(dClients);
             //If there are no clients program can't go on
         }
-        while(clientRecords.isEmpty());
+        while (clientRecords.isEmpty());
         System.out.println("Got " + clientRecords.count() + " clients from topic " + dbClientsTopic);
 
         //Fetch currencies from currencies topic
@@ -105,14 +105,23 @@ public class Clients {
 
         //Initialize all necessary variables
         //sleepTime is the amount of time that separates each pair of credit-payment
-        int sleepTime = 5000;
+        int sleepTime = 10000;
         boolean found;
         Person credClient, payClient;
         Currency credCurr, payCurr;
         Float cred, pay;
 
+        //Results verification
+        float totalCredits = 0F;
+        float totalPayments = 0F;
+
+        HashMap<Integer, Double> creditsPerClient = new HashMap<>();
+        HashMap<Integer, Double> paymentsPerClient = new HashMap<>();
+
+        HashMap<Long, Double> managersRevenue = new HashMap<>();
+
         while (true) {
-            if(clientRecords.count() > 0){
+            if (clientRecords.count() > 0) {
                 for (ConsumerRecord<Long, String> record : clientRecords) {
                     //Parse JSON string to JSON object
                     JSONObject json = new JSONObject(record.value());
@@ -123,9 +132,9 @@ public class Clients {
 
                     //Check if client is already in the pool
                     found = false;
-                    for (Person clnt:
-                         clients) {
-                        if(clnt.getId() == client.getId()){
+                    for (Person clnt :
+                            clients) {
+                        if (clnt.getId() == client.getId()) {
                             found = true;
                             break;
                         }
@@ -135,12 +144,17 @@ public class Clients {
                     if (!found) {
                         //Add client to the pool
                         clients.add(client);
+                        creditsPerClient.put(client.getId(), 0D);
+                        paymentsPerClient.put(client.getId(), 0D);
+
+                        managersRevenue.put(client.getManager_id(), 0D);
+
                         System.out.println("Added client: " + client.getName());
                     }
                 }
             }
 
-            if(currencyRecords.count() > 0){
+            if (currencyRecords.count() > 0) {
                 for (ConsumerRecord<Long, String> record : currencyRecords) {
 
                     //Parse JSON string to JSON object
@@ -157,9 +171,9 @@ public class Clients {
 
                     //Check if currency is already in the pool
                     found = false;
-                    for (Currency crr:
+                    for (Currency crr :
                             currencies) {
-                        if(crr.getId() == currency.getId()){
+                        if (crr.getId() == currency.getId()) {
                             found = true;
                             break;
                         }
@@ -192,6 +206,9 @@ public class Clients {
                     .put("manager_id", credClient.getManager_id())
                     .toString();
 
+            creditsPerClient.put(credClient.getId(), creditsPerClient.get(credClient.getId()) + cred * credCurr.getExchangeRate());
+            totalCredits += cred * credCurr.getExchangeRate();
+
             //Produce to credit topic
             producer.send(new ProducerRecord<>(cTopic, (long) credClient.getId(), credInfo));
             System.out.println("Client " + credClient.getId() + " made a credit of " + cred + " " + credCurr.getName() + ".");
@@ -212,6 +229,10 @@ public class Clients {
                     .put("manager_id", payClient.getManager_id())
                     .toString();
 
+            paymentsPerClient.put(payClient.getId(), paymentsPerClient.get(payClient.getId()) + pay * payCurr.getExchangeRate());
+            managersRevenue.put(payClient.getManager_id(), managersRevenue.get(payClient.getManager_id()) + pay * payCurr.getExchangeRate());
+            totalPayments += pay * payCurr.getExchangeRate();
+
             //Produce to payments topic
             producer.send(new ProducerRecord<>(pTopic, (long) payClient.getId(), payInfo));
             System.out.println("Client " + payClient.getId() + " made a payment of " + pay + " " + payCurr.getName() + ".");
@@ -227,6 +248,37 @@ public class Clients {
             dCurrencies = Duration.ofMillis(250);
             currencyRecords = dbCurrencies.poll(dCurrencies);
             System.out.println(currencyRecords.count() + " records found.");
+
+            //Results verification
+            System.out.println("Results verification");
+            System.out.println("Total credits generated: " + totalCredits);
+            System.out.println("Total payments generated: " + totalPayments);
+            System.out.println("Overall balance: " + (totalPayments - totalCredits));
+            System.out.println("Credits per client");
+            for (Map.Entry<Integer, Double> tmp :
+                    creditsPerClient.entrySet()) {
+                System.out.println("Id: " + tmp.getKey() + " sum of credits: " + tmp.getValue());
+            }
+            System.out.println("Payments per client");
+            for (Map.Entry<Integer, Double> tmp :
+                    paymentsPerClient.entrySet()) {
+                System.out.println("Id: " + tmp.getKey() + " sum of payments: " + tmp.getValue());
+            }
+            System.out.println("Balance per client");
+            for (Map.Entry<Integer, Double> tmpP :
+                    paymentsPerClient.entrySet()) {
+                for (Map.Entry<Integer, Double> tmpC :
+                        creditsPerClient.entrySet()) {
+                    if (tmpP.getKey().equals(tmpC.getKey())) {
+                        System.out.println("Id: " + tmpC.getKey() + " balance: " + (tmpP.getValue() - tmpC.getValue()));
+                    }
+                }
+            }
+            System.out.println("Revenue per manager");
+            for (Map.Entry<Long, Double> tmp :
+                    managersRevenue.entrySet()) {
+                System.out.println("Id: " + tmp.getKey() + " revenue: " + tmp.getValue());
+            }
 
             //Sleep
             Thread.sleep(sleepTime);

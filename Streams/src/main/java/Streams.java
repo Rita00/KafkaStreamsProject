@@ -362,7 +362,7 @@ public class Streams {
         //TO-DO
         //---Get clients without payments for the last 2 months
         Duration intervalTwoMonths = Duration.ofDays(60);
-        KTable<Windowed<Long>, Long> noPayments = creditsStream
+        KTable<Windowed<Long>, Long> noPayments = paymentsStream
                 .groupByKey()
                 .windowedBy(TimeWindows.of(intervalTwoMonths))
                 .count();

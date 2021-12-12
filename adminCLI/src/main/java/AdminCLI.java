@@ -176,6 +176,7 @@ public class AdminCLI {
                     clientsProp.put("name", clientName);
                     Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
 
+
                     String[] addClientOptionsChooseManager = {
                             "Please choose a manager for the client: "
                     };
