@@ -489,6 +489,26 @@ public class AdminCLI {
                     }
                     break;
                 case 14:
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/getNoPayers");
+                    Response clientInfoNoPay = clientTarget.request().get();
+
+                    Map<String, Object> clientInfoNoPayMap = clientInfoNoPay.readEntity(new GenericType<>() {});
+
+                    String[] clientInfoNoPayOptions = {"Clients without payments for the last two months: "};
+
+                    printMenu("No Payments Menu", clientInfoNoPayOptions, true, "");
+
+
+                    if (clientInfoNoPayMap.isEmpty()) {
+                        System.out.println("There are no clients without payments for the last two months\nPress enter continue...");
+                        System.in.read();
+                    } else {
+                        for (Map.Entry<String, Object> mngrNm : clientInfoNoPayMap.entrySet()) {
+                            System.out.println(mngrNm.getValue().toString() + " [Id: " + mngrNm.getKey().toString() + "]");
+                        }
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+                    }
                     break;
                 case 15:
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
@@ -526,7 +546,7 @@ public class AdminCLI {
                         System.in.read();
                     } else {
 
-                        System.out.println(managerInfo.get("managerName") + "[Id:" + managerInfo.get("managerId")
+                        System.out.println(managerInfo.get("managerName") + " [Id: " + managerInfo.get("managerId")
                                 + "] with revenue: "  +managerInfo.get("managerRevenue") + "€");
 
                         System.out.println("Press enter continue...");

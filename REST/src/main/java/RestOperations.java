@@ -406,9 +406,9 @@ public class RestOperations {
 
     @GET
     @Path("/getNoPayers")
-    public Map<Integer, Object> GetNoPayers() {
+    public Map<Long, String> GetNoPayers() {
         //Create map to hold all relevant information
-        Map<Integer, Object> noPayers = new HashMap<>();
+        Map<Long, String> noPayers = new HashMap<>();
         try {
             //Get all windowed credits per client from database
             TypedQuery<NoPayments> noPayments = em.createQuery("FROM NoPayments np WHERE np.number_payments_last_twomonths = 0", NoPayments.class);
@@ -421,7 +421,7 @@ public class RestOperations {
             }
 
             for (NoPayments np : noPaymentsList) {
-                TypedQuery<Person> client = em.createQuery("FROM NoPayments np WHERE np.number_payments_last_twomonths = (:id)", Person.class)
+                TypedQuery<Person> client = em.createQuery("FROM Person p WHERE p.id = (:id)", Person.class)
                         .setParameter(("id"), np.getClient_id());
 
                 //Add to the map
@@ -436,7 +436,6 @@ public class RestOperations {
             return noPayers;
         }
     }
-
 
     @GET
     @Path("/getBestRevenue")
