@@ -74,10 +74,14 @@ public class Streams {
         }
     }
 
-    public static Long extractManagerId(String jsonString) {
+    public static Long extractLongField(String jsonString, String field) {
         try {
             JSONObject j = new JSONObject(jsonString);
-            return j.getLong("manager_id");
+            try {
+                return new JSONObject(j.get("payload").toString()).getLong(field);
+            } catch (JSONException e) {
+                return j.getLong(field);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -97,6 +101,7 @@ public class Streams {
         String mostNegBalanceTopic = "mostnegbalance";
         String bestRevenue = "bestrevenue";
         String noPaymentsTopic = "nopayments";
+        String dbClients = "DBInfoTopics";
 
         //Set properties
         java.util.Properties props = new Properties();
@@ -362,12 +367,19 @@ public class Streams {
         //TO-DO
         //---Get clients without payments for the last 2 months
         Duration intervalTwoMonths = Duration.ofDays(60);
-        KTable<Windowed<Long>, Long> noPayments = creditsStream
-                .groupByKey()
-                .windowedBy(TimeWindows.of(intervalTwoMonths))
-                .count();
-        noPayments
-                .toStream((wk, v) -> wk.key()).map(KeyValue::new)
+
+        KStream<Long, String> streamClients = builder.stream(dbClients, Consumed.with(Serdes.Long(), Serdes.String()))
+                .map((k, v) -> new KeyValue<Long, String>(extractLongField(v, "id"), extractLongField(v, "id").toString()));
+
+        ValueJoiner<String, String, String> valueJoinerNoPayments = ((clientValue, paymentValue) -> {
+            if (paymentValue != null)
+                return "paidInLastTwoMonths";
+            return null;
+        });
+        streamClients.leftJoin(paymentsStream,
+                        valueJoinerNoPayments,
+                        JoinWindows.of(intervalTwoMonths)
+                )
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
@@ -379,9 +391,9 @@ public class Streams {
                                 "\"field\":\"client_id\"" +
                                 "}," +
                                 "{" +
-                                "\"type\":\"int64\"," +
+                                "\"type\":\"boolean\"," +
                                 "\"optional\":false," +
-                                "\"field\":\"number_payments_last_twomonths\"" +
+                                "\"field\":\"paid\"" +
                                 "}" +
                                 "]," +
                                 "\"optional\":false," +
@@ -389,7 +401,7 @@ public class Streams {
                                 "}," +
                                 "\"payload\":{" +
                                 "\"client_id\":" + k + "," +
-                                "\"number_payments_last_twomonths\":" + v +
+                                "\"paid\":" + (v != null) +
                                 "}" +
                                 "}"
                 )
@@ -441,7 +453,7 @@ public class Streams {
 
         //---(the highest sum of clients payments)
         paymentsStream
-                .map((k, v) -> new KeyValue<>(extractManagerId(v), convertCurrency(v)))
+                .map((k, v) -> new KeyValue<>(extractLongField(v, "manager_id"), convertCurrency(v)))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .reduce(Double::sum)
                 .toStream()

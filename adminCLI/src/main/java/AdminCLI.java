@@ -25,7 +25,7 @@ public class AdminCLI {
             System.out.println(opt);
         }
 
-        if(!isMessage){
+        if (!isMessage) {
             System.out.print(input);
         }
     }
@@ -143,85 +143,93 @@ public class AdminCLI {
                     //Get mangers
                     managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
 
-                    //Properties are client name and manager
-                    HashMap<String, Object> clientsProp = new HashMap<>();
-
-                    String[] addClientOptions = {
-                            "Insert client name: ",
-                            "[1] -> Go back"
-                    };
-
-                    printMenu("Add Client Menu", addClientOptions, false, "Choose option or insert name: ");
-
-                    String clientName;
-                    try {
-                        //If its it then
-                        opt = input.nextInt();
-                        //Verify input
-                        if (opt == 1) {
-                            //Go back
-                            break;
-                        } else {
-                            //Try again
-                            System.out.println("Please use a valid number from 1 to " + 1);
-                            System.out.println("Press enter to continue...");
-                            System.in.read();
-                            continue;
-                        }
-                    } catch (Exception ex) {
-                        //Get the name
-                        clientName = input.nextLine();
-                    }
-
-                    clientsProp.put("name", clientName);
-                    Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
-
-                    String[] addClientOptionsChooseManager = {
-                            "Please choose a manager for the client: "
-                    };
-
                     Response addClientResponseManagers = managerTarget.request().get();
                     Map<Integer, String> managerNames = addClientResponseManagers.readEntity(new GenericType<>() {
                     });
 
-                    printMenu("Add Client Menu", addClientOptionsChooseManager, true, "");
+                    if (managerNames.isEmpty()) {
+                        System.out.println("There are no managers.\nPlease add some...\nPress enter continue...");
+                        System.in.read();
+                        continue;
+                    } else {
+                        //Properties are client name and manager
+                        HashMap<String, Object> clientsProp = new HashMap<>();
 
-                    List<Integer> managerMapKeys = new ArrayList<>(managerNames.keySet());
-                    for (int i = 1; i <= managerNames.keySet().size(); i++) {
-                        System.out.println(i + " -> " + managerNames.get(managerMapKeys.get(i - 1)));
-                    }
+                        String[] addClientOptions = {
+                                "Insert client name: ",
+                                "[1] -> Go back"
+                        };
 
-                    System.out.print("Please choose an option: ");
+                        printMenu("Add Client Menu", addClientOptions, false, "Choose option or insert name: ");
 
-                    int index;
-                    try {
-                        index = input.nextInt();
-                        input.nextLine();
-                        //Verify input
-                        if (index < 1 || index > managerNames.keySet().size() + 1) {
-                            //Try again
+                        String clientName;
+                        try {
+                            //If its it then
+                            opt = input.nextInt();
+                            //Verify input
+                            if (opt == 1) {
+                                //Go back
+                                break;
+                            } else {
+                                //Try again
+                                System.out.println("Please use a valid number from 1 to " + 1);
+                                System.out.println("Press enter to continue...");
+                                System.in.read();
+                                continue;
+                            }
+                        } catch (Exception ex) {
+                            //Get the name
+                            clientName = input.nextLine();
+                        }
+
+                        clientsProp.put("name", clientName);
+                        Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
+
+                        String[] addClientOptionsChooseManager = {
+                                "Please choose a manager for the client: "
+                        };
+
+
+                        printMenu("Add Client Menu", addClientOptionsChooseManager, true, "");
+
+                        List<Integer> managerMapKeys = new ArrayList<>(managerNames.keySet());
+                        for (int i = 1; i <= managerNames.keySet().size(); i++) {
+                            System.out.println(i + " -> " + managerNames.get(managerMapKeys.get(i - 1)));
+                        }
+
+                        System.out.print("Please choose an option: ");
+
+                        int index;
+                        try {
+                            index = input.nextInt();
+                            input.nextLine();
+                            //Verify input
+                            if (index < 1 || index > managerNames.keySet().size() + 1) {
+                                //Try again
+                                System.out.println("Please use a valid number from 1 to " + managerNames.keySet().size() + 1);
+                                System.out.println("Press enter to continue...");
+                                System.in.read();
+                                continue;
+                            }
+                        } catch (Exception ex) {
                             System.out.println("Please use a valid number from 1 to " + managerNames.keySet().size() + 1);
                             System.out.println("Press enter to continue...");
                             System.in.read();
                             continue;
                         }
-                    } catch (Exception ex) {
-                        System.out.println("Please use a valid number from 1 to " + managerNames.keySet().size() + 1);
-                        System.out.println("Press enter to continue...");
+
+                        clientsProp.put("managerID", managerMapKeys.get(index - 1));
+
+                        Response addClientResponseClients = clientTarget.request().post(inputClient);
+
+                        System.out.println(addClientResponseClients.readEntity(String.class));
+
+                        System.out.println("Press enter continue...");
                         System.in.read();
-                        continue;
+
+                        addClientResponseClients.close();
                     }
 
-                    clientsProp.put("managerID", managerMapKeys.get(index - 1));
-
-                    Response addClientResponseClients = clientTarget.request().post(inputClient);
-
-                    System.out.println(addClientResponseClients.readEntity(String.class));
-
-                    System.out.println("Press enter continue...");
-                    System.in.read();
-
-                    addClientResponseClients.close();
 
                     break;
 
@@ -287,7 +295,8 @@ public class AdminCLI {
                     managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
                     Response managersResponse = managerTarget.request().get();
 
-                    Map<Integer, String> allManagers = managersResponse.readEntity(new GenericType<>() {});
+                    Map<Integer, String> allManagers = managersResponse.readEntity(new GenericType<>() {
+                    });
 
                     String[] listManagerOptions = {"List of Managers: "};
 
@@ -309,14 +318,15 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
                     Response clients = clientTarget.request().get();
 
-                    Map<Integer, String> allClients = clients.readEntity(new GenericType<>() {});
+                    Map<Integer, String> allClients = clients.readEntity(new GenericType<>() {
+                    });
 
                     String[] listClientOptions = {"List of clients: "};
 
                     printMenu("List Clients Menu", listClientOptions, true, "");
 
                     if (allClients.isEmpty()) {
-                        System.out.println("Press enter continue...");
+                        System.out.println("There are no clients.\nPlease add some...\nPress enter continue...");
                         System.in.read();
                     } else {
                         List<Integer> allClientsKeys = new ArrayList<>(allClients.keySet());
@@ -331,14 +341,15 @@ public class AdminCLI {
                     currencyTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCurrencies");
                     Response currencies = currencyTarget.request().get();
 
-                    Map<String, Double> allCurrencies = currencies.readEntity(new GenericType<>() {});
+                    Map<String, Double> allCurrencies = currencies.readEntity(new GenericType<>() {
+                    });
 
                     String[] listCurrenciesOptions = {"List of currencies: "};
 
                     printMenu("List Currencies Menu", listCurrenciesOptions, true, "");
 
                     if (allCurrencies.isEmpty()) {
-                        System.out.println("Press enter continue...");
+                        System.out.println("There are no currencies.\nPlease add some...\nPress enter continue...");
                         System.in.read();
                     } else {
                         for (Map.Entry<String, Double> mngrNm : allCurrencies.entrySet()) {
@@ -352,7 +363,8 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCreditPerClient");
                     Response creditsPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allCreditsPerClient = creditsPerClient.readEntity(new GenericType<>() {});
+                    Map<String, Float> allCreditsPerClient = creditsPerClient.readEntity(new GenericType<>() {
+                    });
 
                     String[] listCreditsPerClientOptions = {"List of credits per client: "};
 
@@ -374,7 +386,8 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listPaymentsPerClient");
                     Response paymentsPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allPaymentsPerClient = paymentsPerClient.readEntity(new GenericType<>() {});
+                    Map<String, Float> allPaymentsPerClient = paymentsPerClient.readEntity(new GenericType<>() {
+                    });
 
                     String[] listPaymentsPerClientOptions = {"List of payments per client: "};
 
@@ -394,13 +407,14 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
                     Response balancesPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<>() {});
+                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<>() {
+                    });
 
                     String[] listBalancesPerClientOptions = {"List of balances per client: "};
 
                     printMenu("Balances Menu", listBalancesPerClientOptions, true, "");
                     if (allBalancesPerClient.isEmpty()) {
-                        System.out.println("Something went wrong there are no payments\nPress enter continue...");
+                        System.out.println("Something went wrong there are no balances\nPress enter continue...");
                         System.in.read();
                     } else {
                         for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
@@ -471,7 +485,8 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/billPerClient");
                     Response billPerClient = clientTarget.request().get();
 
-                    Map<Long, Double> allBillsPerClient = billPerClient.readEntity(new GenericType<>() {});
+                    Map<Long, Double> allBillsPerClient = billPerClient.readEntity(new GenericType<>() {
+                    });
 
                     String[] listBillPerClientOptions = {"List of bills per client for the last month: "};
 
@@ -492,7 +507,8 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/getNoPayers");
                     Response clientInfoNoPay = clientTarget.request().get();
 
-                    Map<String, Object> clientInfoNoPayMap = clientInfoNoPay.readEntity(new GenericType<>() {});
+                    Map<String, Object> clientInfoNoPayMap = clientInfoNoPay.readEntity(new GenericType<>() {
+                    });
 
                     String[] clientInfoNoPayOptions = {"Clients without payments for the last two months: "};
 
@@ -514,7 +530,8 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
                     Response clientId = clientTarget.request().get();
 
-                    Map<String, Object> clientInfo = clientId.readEntity(new GenericType<>() {});
+                    Map<String, Object> clientInfo = clientId.readEntity(new GenericType<>() {
+                    });
 
                     String[] highestDebInfo = {"Client with Highest Debt: "};
 
@@ -535,7 +552,8 @@ public class AdminCLI {
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/getBestRevenue");
                     Response managerId = clientTarget.request().get();
 
-                    Map<String, Object> managerInfo = managerId.readEntity(new GenericType<>() {});
+                    Map<String, Object> managerInfo = managerId.readEntity(new GenericType<>() {
+                    });
 
                     String[] highestRevInfo = {"Manager with Highest Revenue: "};
 
@@ -547,7 +565,7 @@ public class AdminCLI {
                     } else {
 
                         System.out.println(managerInfo.get("managerName") + " [Id: " + managerInfo.get("managerId")
-                                + "] with revenue: "  +managerInfo.get("managerRevenue") + "€");
+                                + "] with revenue: " + managerInfo.get("managerRevenue") + "€");
 
                         System.out.println("Press enter continue...");
                         System.in.read();

@@ -202,6 +202,9 @@ public class Clients {
             //Choose random client to attach to the payment
             payClient = clients.get(rand.nextInt(clients.size()));
 
+            while (payClient.getId() == 4) {
+                payClient = clients.get(rand.nextInt(clients.size()));
+            }
             //Choose
             payCurr = currencies.get(rand.nextInt(currencies.size()));
 
