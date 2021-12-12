@@ -122,7 +122,7 @@ public class AdminCLI {
                     }
 
                     //Create object
-                    Entity<String> inputManager = Entity.entity(managerName, MediaType.APPLICATION_JSON);
+                    Entity<String> inputManager = Entity.entity(managerName.trim(), MediaType.APPLICATION_JSON);
 
                     //Try to add to the database
                     Response addManagerResponse = managerTarget.request().post(inputManager);
@@ -182,7 +182,7 @@ public class AdminCLI {
                             clientName = input.nextLine();
                         }
 
-                        clientsProp.put("name", clientName);
+                        clientsProp.put("name", clientName.trim());
                         Entity<HashMap<String, Object>> inputClient = Entity.entity(clientsProp, MediaType.APPLICATION_JSON);
 
                         String[] addClientOptionsChooseManager = {
