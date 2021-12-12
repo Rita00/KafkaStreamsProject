@@ -365,7 +365,7 @@ public class Streams {
                 )
                 .to(windowedCreditPerClientTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
-        //TO-DO
+
         //---Get clients without payments for the last 2 months
         Duration intervalTwoMonths = Duration.ofDays(60);
 
@@ -409,11 +409,6 @@ public class Streams {
                 .to(noPaymentsTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //---Get the client with most negative balance
-//        ValueJoiner<Double, Double, Double> valueJoiner = ((payment, credit) -> payment - credit);
-//        KTable<Long, Double> joined = paymentsPerClient.join(creditsPerClient,
-//                valueJoiner
-//        );
-
         allActionsStream
                 .groupByKey()
                 .reduce((v1, v2) -> v1 + v2)
