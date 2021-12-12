@@ -372,4 +372,34 @@ public class RestOperations {
             return clientHighestDebt;
         }
     }
+
+    @GET
+    @Path("/billPerClient")
+    public Map<Long, Double> BillPerClient() {
+        //Create map to hold all relevant information
+        Map<Long, Double> billPerClient = new HashMap<>();
+        try {
+            //Get all balances per client from database
+            TypedQuery<WindowedCreditPerClient> billPerClients = em.createQuery("FROM WindowedCreditPerClient wcpc", WindowedCreditPerClient.class);
+            List<WindowedCreditPerClient> billPerClientsList = billPerClients.getResultList();
+
+            //If there are no balances per client in the database
+            if (billPerClientsList.isEmpty()) {
+                //Return empty
+                return billPerClient;
+            }
+
+            for (WindowedCreditPerClient wcpc : billPerClientsList) {
+                //Add to the map
+                billPerClient.put(wcpc.getClient_id(), wcpc.getTotal_credit_lastmonth());
+            }
+
+            //Return all relevant information
+            return billPerClient;
+        } catch (Exception e) {
+            e.printStackTrace();
+            //Something went wrong, return empty
+            return billPerClient;
+        }
+    }
 }
