@@ -1,0 +1,10 @@
+/workspace/REST/src/main/java/ApplicationConfig.java
+/workspace/REST/src/main/java/Entities/PaymentsPerClient.java
+/workspace/REST/src/main/java/Entities/BalancePerClient.java
+/workspace/REST/src/main/java/RestOperations.java
+/workspace/REST/src/main/java/Entities/TotalResults.java
+/workspace/REST/src/main/java/Entities/Person.java
+/workspace/REST/src/main/java/Entities/MostNegBalance.java
+/workspace/REST/src/main/java/Entities/CreditsPerClient.java
+/workspace/REST/src/main/java/Entities/Currency.java
+/workspace/REST/src/main/java/Entities/Manager.java
