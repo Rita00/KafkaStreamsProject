@@ -95,8 +95,8 @@ public class Streams {
         String balancePerClientTopic = "balanceperclient";
         String totalResultsTopic = "totalresults";
         String mostNegBalanceTopic = "mostnegbalance";
-        String dbClientsTopic = "DBInfoTopics";
         String bestRevenue = "bestrevenue";
+        String noPaymentsTopic = "nopayments";
 
         //Set properties
         java.util.Properties props = new Properties();
@@ -361,7 +361,39 @@ public class Streams {
 
         //TO-DO
         //---Get clients without payments for the last 2 months
-
+        Duration intervalTwoMonths = Duration.ofDays(60);
+        KTable<Windowed<Long>, Long> noPayments = creditsStream
+                .groupByKey()
+                .windowedBy(TimeWindows.of(intervalTwoMonths))
+                .count();
+        noPayments
+                .toStream((wk, v) -> wk.key()).map(KeyValue::new)
+                .mapValues((k, v) ->
+                        "{" +
+                                "\"schema\":{" +
+                                "\"type\":\"struct\"," +
+                                "\"fields\":[" +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"client_id\"" +
+                                "}," +
+                                "{" +
+                                "\"type\":\"int64\"," +
+                                "\"optional\":false," +
+                                "\"field\":\"number_payments_last_twomonths\"" +
+                                "}" +
+                                "]," +
+                                "\"optional\":false," +
+                                "\"name\":\"total data\"" +
+                                "}," +
+                                "\"payload\":{" +
+                                "\"client_id\":" + k + "," +
+                                "\"number_payments_last_twomonths\":" + v +
+                                "}" +
+                                "}"
+                )
+                .to(noPaymentsTopic, Produced.with(Serdes.Long(), Serdes.String()));
 
         //---Get the client with most negative balance
         joined
@@ -409,20 +441,20 @@ public class Streams {
 
         //---(the highest sum of clients payments)
         paymentsStream
-                .map((k, v) -> new KeyValue<Long, Double>(extractManagerId(v), convertCurrency(v)))
+                .map((k, v) -> new KeyValue<>(extractManagerId(v), convertCurrency(v)))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2)
+                .reduce(Double::sum)
                 .toStream()
-                .map((k, v) -> new KeyValue<Long, String>(k, v + "," + k))
+                .map((k, v) -> new KeyValue<>(k, v + "," + k))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.String()))
                 .aggregate(
                         () -> "0,0",
                         (aggKey, newValue, aggValue) -> {
 
-                            Long newManagerId = Long.parseLong(newValue.split(",")[1]);
-                            Double newManagerRevenue = Double.parseDouble(newValue.split(",")[0]);
+                            long newManagerId = Long.parseLong(newValue.split(",")[1]);
+                            double newManagerRevenue = Double.parseDouble(newValue.split(",")[0]);
 
-                            Double bestManagerRevenue = Double.parseDouble(aggValue.split(",")[0]);
+                            double bestManagerRevenue = Double.parseDouble(aggValue.split(",")[0]);
                             if (newManagerRevenue > bestManagerRevenue) {
                                 return newManagerRevenue + "," + newManagerId;
                             }
@@ -462,7 +494,6 @@ public class Streams {
                                 "}"
                 )
                 .to(bestRevenue, Produced.with(Serdes.Long(), Serdes.String()));
-
 
         //Create streams with the previously set properties
         KafkaStreams streams = new KafkaStreams(builder.build(), props);

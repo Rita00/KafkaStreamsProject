@@ -489,7 +489,6 @@ public class AdminCLI {
                     }
                     break;
                 case 14:
-                    System.out.println("To-Do option 14");
                     break;
                 case 15:
                     clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
@@ -499,7 +498,7 @@ public class AdminCLI {
 
                     String[] highestDebInfo = {"Client with Highest Debt: "};
 
-                    printMenu("header", highestDebInfo, true, "");
+                    printMenu("Highest Debt Menu", highestDebInfo, true, "");
 
                     if (clientInfo.isEmpty()) {
                         System.out.println("Something went wrong there are no client found\nPress enter continue...");
@@ -512,7 +511,27 @@ public class AdminCLI {
                     }
                     break;
                 case 16:
-                    System.out.println("To-Do option 16");
+
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/getBestRevenue");
+                    Response managerId = clientTarget.request().get();
+
+                    Map<String, Object> managerInfo = managerId.readEntity(new GenericType<>() {});
+
+                    String[] highestRevInfo = {"Manager with Highest Revenue: "};
+
+                    printMenu("Highest Revenue Menu", highestRevInfo, true, "");
+
+                    if (managerInfo.isEmpty()) {
+                        System.out.println("Something went wrong there are no client found\nPress enter continue...");
+                        System.in.read();
+                    } else {
+
+                        System.out.println(managerInfo.get("managerName") + "[Id:" + managerInfo.get("managerId")
+                                + "] with revenue: "  +managerInfo.get("managerRevenue") + "€");
+
+                        System.out.println("Press enter continue...");
+                        System.in.read();
+                    }
                     break;
                 case 17:
                     System.out.println("Goodbye!");

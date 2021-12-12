@@ -402,4 +402,76 @@ public class RestOperations {
             return billPerClient;
         }
     }
+
+
+    @GET
+    @Path("/getNoPayers")
+    public Map<Integer, Object> GetNoPayers() {
+        //Create map to hold all relevant information
+        Map<Integer, Object> noPayers = new HashMap<>();
+        try {
+            //Get all windowed credits per client from database
+            TypedQuery<NoPayments> noPayments = em.createQuery("FROM NoPayments np WHERE np.number_payments_last_twomonths = 0", NoPayments.class);
+            List<NoPayments> noPaymentsList = noPayments.getResultList();
+
+            //If there are no credits per client in the database
+            if (noPaymentsList.isEmpty()) {
+                //Return empty
+                return noPayers;
+            }
+
+            for (NoPayments np : noPaymentsList) {
+                TypedQuery<Person> client = em.createQuery("FROM NoPayments np WHERE np.number_payments_last_twomonths = (:id)", Person.class)
+                        .setParameter(("id"), np.getClient_id());
+
+                //Add to the map
+                noPayers.put(np.getClient_id(), client.getSingleResult().getName());
+            }
+
+            //Return all relevant information
+            return noPayers;
+        } catch (Exception e) {
+            e.printStackTrace();
+            //Something went wrong, return empty
+            return noPayers;
+        }
+    }
+
+
+    @GET
+    @Path("/getBestRevenue")
+    public Map<String, Object> GetBestRevenue() {
+        //Create maps to hold all relevant information
+        Map<String, Object> revenueInfo = new HashMap<>();
+        try {
+            //Get all windowed credits per client from database
+            TypedQuery<BestRevenue> bestRev = em.createQuery("FROM BestRevenue br", BestRevenue.class);
+            List<BestRevenue> bestRevList = bestRev.getResultList();
+
+            //If there are no credits per client in the database
+            if (bestRevList.isEmpty()) {
+                //Return empty
+                return revenueInfo;
+            }
+
+            for (BestRevenue br : bestRevList) {
+                TypedQuery<Manager> manager = em.createQuery("FROM Manager mn WHERE mn.id = (:id)", Manager.class)
+                        .setParameter(("id"), br.getManager_id());
+                Manager managerSingle = manager.getSingleResult();
+
+                //Add to the map
+                revenueInfo.put("managerId", br.getManager_id());
+                revenueInfo.put("managerName", managerSingle.getName());
+                revenueInfo.put("managerRevenue", br.getRevenue());
+            }
+
+            //Return all relevant information
+            return revenueInfo;
+        } catch (Exception e) {
+            e.printStackTrace();
+            //Something went wrong, return empty
+            return revenueInfo;
+        }
+    }
+
 }

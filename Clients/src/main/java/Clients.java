@@ -121,9 +121,6 @@ public class Clients {
                     //Which contains all the relevant data
                     Person client = gson.fromJson(json.get("payload").toString(), Person.class);
 
-                    System.out.println("\n\n\n\n\nJson" + json.get("payload").toString() + "\n\n\n\n");
-                    System.out.println("\n\n\n\nClient Manager: " + client.getManager_id() + "\n\n\n\n");
-
                     //Check if client is already in the pool
                     found = false;
                     for (Person clnt:
