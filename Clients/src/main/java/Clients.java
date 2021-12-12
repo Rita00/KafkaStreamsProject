@@ -194,7 +194,7 @@ public class Clients {
             credClient = clients.get(rand.nextInt(clients.size()));
 
             //Produce random credit
-            cred = rand.nextFloat() * (100f - 1f);
+            cred = rand.nextFloat() * (20f - 1f);
 
             //Choose random currency
             credCurr = currencies.get(rand.nextInt(currencies.size()));
