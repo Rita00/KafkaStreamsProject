@@ -321,6 +321,8 @@ public class AdminCLI {
 
                     printMenu(header, highestDebInfo, true);
 
+                    System.out.println(clientInfo.get("name"));
+
                     if (clientInfo.isEmpty())
                         System.out.println("No client found");
                     else {

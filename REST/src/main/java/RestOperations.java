@@ -354,33 +354,29 @@ public class RestOperations {
     @GET
     @Path("listClientHighestDebt")
     public Map<String, Object> ListClientHighestDebt() {
-        //Create hashmap to hold info
+        //Create map to hold info
         Map<String, Object> clientHighestDebt = new HashMap<>();
 
-        //Get client with the highest debt from database
+        //Get client with the highest debt
         Query q = em.createQuery("FROM MostNegBalance mnb");
         try {
-            //Only one item in the table
             MostNegBalance clientId = (MostNegBalance) q.getSingleResult();
 
-            //Get client name also
+            //Get person with correspondent client id
             Query p = em.createQuery("FROM Person p WHERE p.id = :id");
             p.setParameter("id", clientId.getClient_id());
             Person person = (Person) p.getSingleResult();
 
-            //Add client to the hashmap
+            //Put relevant info in the map
             clientHighestDebt.put("name", person.getName());
             clientHighestDebt.put("current_balance", clientId.getCurrent_balance());
 
-            //Return relevant information
+            //Return it
             return clientHighestDebt;
         } catch (NoResultException e) {
-
-            //Something went wrong. Add error message
-            clientHighestDebt.put("name", "Something went wrong.\nCouldn't get client with highest debt\nPlease try again...");
+            clientHighestDebt.put("name", "Something went wrong. Couldn't get client with highest debt.\nPlease try again");
             clientHighestDebt.put("current_balance", -1);
 
-            //Return it
             return clientHighestDebt;
         }
     }
