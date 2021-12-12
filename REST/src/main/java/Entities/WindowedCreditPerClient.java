@@ -7,27 +7,16 @@ import javax.persistence.Id;
 @Entity
 public class WindowedCreditPerClient {
     @Id
-    private String primary_key;
-
     private long client_id;
 
-    private double total_credit_lastmonth;
+    private double total_credits_lastmonth;
 
     public WindowedCreditPerClient() {
     }
 
-    public WindowedCreditPerClient(String primary_key, long client_id, double total_credit_lastmonth) {
-        this.primary_key = primary_key;
+    public WindowedCreditPerClient(long client_id, double total_credits_lastmonth) {
         this.client_id = client_id;
-        this.total_credit_lastmonth = total_credit_lastmonth;
-    }
-
-    public String getPrimary_key() {
-        return primary_key;
-    }
-
-    public void setPrimary_key(String primary_key) {
-        this.primary_key = primary_key;
+        this.total_credits_lastmonth = total_credits_lastmonth;
     }
 
     public long getClient_id() {
@@ -38,11 +27,11 @@ public class WindowedCreditPerClient {
         this.client_id = client_id;
     }
 
-    public double getTotal_credit_lastmonth() {
-        return total_credit_lastmonth;
+    public double getTotal_credits_lastmonth() {
+        return total_credits_lastmonth;
     }
 
-    public void setTotal_credit_lastmonth(double total_credit_lastmonth) {
-        this.total_credit_lastmonth = total_credit_lastmonth;
+    public void setTotal_credits_lastmonth(double total_credits_lastmonth) {
+        this.total_credits_lastmonth = total_credits_lastmonth;
     }
 }

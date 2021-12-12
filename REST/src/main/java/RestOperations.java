@@ -391,7 +391,7 @@ public class RestOperations {
 
             for (WindowedCreditPerClient wcpc : billPerClientsList) {
                 //Add to the map
-                billPerClient.put(wcpc.getClient_id(), wcpc.getTotal_credit_lastmonth());
+                billPerClient.put(wcpc.getClient_id(), wcpc.getTotal_credits_lastmonth());
             }
 
             //Return all relevant information

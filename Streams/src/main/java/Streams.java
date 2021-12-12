@@ -79,7 +79,7 @@ public class Streams {
         //Set topics names
         String cTopic = "Credits";
         String pTopic = "Payments";
-        String windowedCreditPerClientTopic = "windowedCreditPerClient";
+        String windowedCreditPerClientTopic = "windowedcreditperclient";
         String paymentsPerClientTopic = "paymentsperclient";
         String creditsPerClientTopic = "creditsperclient";
         String balancePerClientTopic = "balanceperclient";

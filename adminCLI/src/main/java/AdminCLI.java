@@ -472,9 +472,11 @@ public class AdminCLI {
                     Response billPerClient = clientTarget.request().get();
 
                     Map<Long, Double> allBillsPerClient = billPerClient.readEntity(new GenericType<>() {});
+
                     String[] listBillPerClientOptions = {"List of bills per client for the last month: "};
 
                     printMenu("Bills Menu", listBillPerClientOptions, true, "");
+
                     if (allBillsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
