@@ -538,7 +538,7 @@ public class AdminCLI {
                     printMenu("Highest Debt Menu", highestDebInfo, true, "");
 
                     if (clientInfo.isEmpty()) {
-                        System.out.println("Something went wrong there are no client found\nPress enter continue...");
+                        System.out.println("There are no clients with debt\nPress enter continue...");
                         System.in.read();
                     } else {
                         System.out.println("Client name: " + clientInfo.get("name").toString() + " with balance: " + Double.parseDouble(clientInfo.get("current_balance").toString()) + "€");
