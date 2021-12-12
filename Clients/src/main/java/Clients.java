@@ -121,6 +121,9 @@ public class Clients {
                     //Which contains all the relevant data
                     Person client = gson.fromJson(json.get("payload").toString(), Person.class);
 
+                    System.out.println("\n\n\n\n\nJson" + json.get("payload").toString() + "\n\n\n\n");
+                    System.out.println("\n\n\n\nClient Manager: " + client.getManager_id() + "\n\n\n\n");
+
                     //Check if client is already in the pool
                     found = false;
                     for (Person clnt:
@@ -189,6 +192,7 @@ public class Clients {
             String credInfo = new JSONObject().put("value", cred)
                     .put("currencyName", credCurr.getName())
                     .put("currencyExchangeRate", credCurr.getExchangeRate())
+                    .put("manager_id", credClient.getManager_id())
                     .toString();
 
             //Produce to credit topic
@@ -208,6 +212,7 @@ public class Clients {
             String payInfo = new JSONObject().put("value", pay)
                     .put("currencyName", payCurr.getName())
                     .put("currencyExchangeRate", payCurr.getExchangeRate())
+                    .put("manager_id", payClient.getManager_id())
                     .toString();
 
             //Produce to payments topic

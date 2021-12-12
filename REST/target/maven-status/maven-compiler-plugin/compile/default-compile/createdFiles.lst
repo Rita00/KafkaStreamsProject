@@ -1,11 +1,12 @@
-RestOperations.class
 ApplicationConfig.class
-Entities/BestRevenue.class
 Entities/TotalResults.class
 Entities/MostNegBalance.class
-Entities/CreditsPerClient.class
 Entities/Currency.class
-Entities/Manager.class
 Entities/PaymentsPerClient.class
 Entities/BalancePerClient.class
 Entities/Person.class
+RestOperations.class
+Entities/BestRevenue.class
+Entities/CreditsPerClient.class
+Entities/Manager.class
+Entities/WindowedCreditPerClient.class

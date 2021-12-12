@@ -7,13 +7,7 @@ public class Person {
 
     private String name;
 
-    private float total_payments;
-
-    private float total_credits;
-
-    private float current_balance;
-
-    private Manager manager;
+    private long manager_id;
 
     public Person() {}
 
@@ -37,36 +31,12 @@ public class Person {
         this.name = name;
     }
 
-    public Manager getManager() {
-        return manager;
+    public long getManager_id() {
+        return manager_id;
     }
 
-    public void setManager(Manager manager) {
-        this.manager = manager;
-    }
-
-    public float getTotal_payments() {
-        return total_payments;
-    }
-
-    public void setTotal_payments(float total_payments) {
-        this.total_payments = total_payments;
-    }
-
-    public float getTotal_credits() {
-        return total_credits;
-    }
-
-    public void setTotal_credits(float total_credits) {
-        this.total_credits = total_credits;
-    }
-
-    public float getCurrent_balance() {
-        return current_balance;
-    }
-
-    public void setCurrent_balance(float current_balance) {
-        this.current_balance = current_balance;
+    public void setManager_id(long manager_id) {
+        this.manager_id = manager_id;
     }
 
     @Override

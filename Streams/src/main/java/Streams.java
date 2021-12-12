@@ -77,8 +77,8 @@ public class Streams {
     public static Long extractManagerId(String jsonString) {
         try {
             JSONObject j = new JSONObject(jsonString);
-            String payload = j.get("payload").toString();
-            j = new JSONObject(payload);
+//            String payload = j.get("payload").toString();
+//            j = new JSONObject(payload);
             return j.getLong("manager_id");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -422,51 +422,23 @@ public class Streams {
 
         //TO-DO
         //---(the highest sum of clients payments)
-        KStream<Long, String> clientsStream = builder.stream(dbClientsTopic);
-        KStream<Long, Long> a = clientsStream
-                .map((k, v) -> new KeyValue<Long, Long>(extractClientId(v), extractManagerId(v)));
-        KTable<Long, Long> mapClientsStream = a
-                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Long()))
-                .reduce((v1, v2) -> v1);
-
-
-        KStream<Long, Double> totalPayments = paymentsStream
-                .mapValues((v) -> convertCurrency(v));
-
-        ValueJoiner<Double, Long, String> managersJoiner = ((payment, managerId) -> payment + "," + managerId);
-        KStream<Long, String> joinedManagers = totalPayments.join(mapClientsStream,
-                managersJoiner
-        );
-
-        joinedManagers
-                .map((k, v) -> new KeyValue<Long, Double>(Long.parseLong(v.split(",")[1]), Double.parseDouble(v.split(",")[0])))
+        paymentsStream
                 .peek((k, v) -> {
                     System.out.println("\n\n\n\n");
-                    System.out.println("Before Group");
                     System.out.println(k);
                     System.out.println(v);
                     System.out.println("\n\n\n\n");
                 })
+                .map((k, v) -> new KeyValue<Long, Double>(extractManagerId(v), convertCurrency(v)))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> {
-                    System.out.println("\n\n\n\n");
-                    System.out.println("Reduce");
-                    System.out.println(v1);
-                    System.out.println(v2);
-                    System.out.println("\n\n\n\n");
-                    return v1 + v2;
-                })
+                .reduce((v1, v2) -> v1 + v2)
                 .toStream()
                 .map((k, v) -> new KeyValue<Long, String>(k, v + "," + k))
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.String()))
                 .aggregate(
                         () -> "0,0",
                         (aggKey, newValue, aggValue) -> {
-                            System.out.println("\n\n\n\n");
-                            System.out.println("aggKey: " + aggKey);
-                            System.out.println("newValue: " + newValue);
-                            System.out.println("aggValue: " + aggValue);
-                            System.out.println("\n\n\n\n");
+
                             Long newManagerId = Long.parseLong(newValue.split(",")[1]);
                             Double newManagerRevenue = Double.parseDouble(newValue.split(",")[0]);
 
@@ -510,6 +482,79 @@ public class Streams {
                                 "}"
                 )
                 .to(bestRevenue, Produced.with(Serdes.Long(), Serdes.String()));
+
+//        joinedManagers
+//                .map((k, v) -> new KeyValue<Long, Double>(Long.parseLong(v.split(",")[1]), Double.parseDouble(v.split(",")[0])))
+//                .peek((k, v) -> {
+//                    System.out.println("\n\n\n\n");
+//                    System.out.println("Before Group");
+//                    System.out.println(k);
+//                    System.out.println(v);
+//                    System.out.println("\n\n\n\n");
+//                })
+//                .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
+//                .reduce((v1, v2) -> {
+//                    System.out.println("\n\n\n\n");
+//                    System.out.println("Reduce");
+//                    System.out.println(v1);
+//                    System.out.println(v2);
+//                    System.out.println("\n\n\n\n");
+//                    return v1 + v2;
+//                })
+//                .toStream()
+//                .map((k, v) -> new KeyValue<Long, String>(k, v + "," + k))
+//                .groupByKey(Grouped.with(Serdes.Long(), Serdes.String()))
+//                .aggregate(
+//                        () -> "0,0",
+//                        (aggKey, newValue, aggValue) -> {
+//                            System.out.println("\n\n\n\n");
+//                            System.out.println("aggKey: " + aggKey);
+//                            System.out.println("newValue: " + newValue);
+//                            System.out.println("aggValue: " + aggValue);
+//                            System.out.println("\n\n\n\n");
+//                            Long newManagerId = Long.parseLong(newValue.split(",")[1]);
+//                            Double newManagerRevenue = Double.parseDouble(newValue.split(",")[0]);
+//
+//                            Double bestManagerRevenue = Double.parseDouble(aggValue.split(",")[0]);
+//                            if (newManagerRevenue > bestManagerRevenue) {
+//                                return newManagerRevenue + "," + newManagerId;
+//                            }
+//                            return aggValue;
+//                        }
+//                )
+//                .toStream()
+//                .mapValues((k, v) ->
+//                        "{" +
+//                                "\"schema\":{" +
+//                                "\"type\":\"struct\"," +
+//                                "\"fields\":[" +
+//                                "{" +
+//                                "\"type\":\"string\"," +
+//                                "\"optional\":false," +
+//                                "\"field\":\"primary_key\"" +
+//                                "}," +
+//                                "{" +
+//                                "\"type\":\"double\"," +
+//                                "\"optional\":false," +
+//                                "\"field\":\"revenue\"" +
+//                                "}," +
+//                                "{" +
+//                                "\"type\":\"int64\"," +
+//                                "\"optional\":false," +
+//                                "\"field\":\"manager_id\"" +
+//                                "}" +
+//                                "]," +
+//                                "\"optional\":false," +
+//                                "\"name\":\"bestrevenue\"" +
+//                                "}," +
+//                                "\"payload\":{" +
+//                                "\"primary_key\":\"highestRevenue\"," +
+//                                "\"manager_id\":" + v.split(",")[1] +
+//                                ", \"revenue\":" + v.split(",")[0] +
+//                                "}" +
+//                                "}"
+//                )
+//                .to(bestRevenue, Produced.with(Serdes.Long(), Serdes.String()));
 
         //Create streams with the previously set properties
         KafkaStreams streams = new KafkaStreams(builder.build(), props);

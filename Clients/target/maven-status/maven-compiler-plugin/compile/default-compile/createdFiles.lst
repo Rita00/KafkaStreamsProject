@@ -1,4 +1,4 @@
-Entities/Manager.class
-Entities/Person.class
+Entities\Person.class
+Entities\Manager.class
 Clients.class
-Entities/Currency.class
+Entities\Currency.class
