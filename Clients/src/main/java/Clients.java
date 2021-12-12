@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import java.time.Duration;
 import java.util.*;
 
+@SuppressWarnings({"BusyWait", "InfiniteLoopStatement"})
 public class Clients {
 
     public static void main(String[] args) throws Exception {
@@ -78,19 +79,19 @@ public class Clients {
         //List of currencies
         ArrayList<Currency> currencies = new ArrayList<>();
 
+        //Initialize variables outside do while
         ConsumerRecords<Long, String> clientRecords;
         Duration dClients;
 
+        //Fetch all data from the DBInfoTopics
+        System.out.println("Getting clients from " + dbClientsTopic);
         do{
-            //Fetch all data from the DBInfoTopics
-            System.out.println("Getting clients from " + dbClientsTopic);
             dClients = Duration.ofSeconds(30);
             clientRecords = dbClients.poll(dClients);
-            System.out.println("Got " + clientRecords.count() + " clients from topic " + dbClientsTopic);
-
             //If there are no clients program can't go on
         }
         while(clientRecords.isEmpty());
+        System.out.println("Got " + clientRecords.count() + " clients from topic " + dbClientsTopic);
 
         //Fetch currencies from currencies topic
         System.out.println("Getting currencies from " + dbCurrenciesTopic);
@@ -102,12 +103,14 @@ public class Clients {
         Currency euro = new Currency("euro", 1f);
         currencies.add(euro);
 
+        //Initialize all necessary variables
+        //sleepTime is the amount of time that separates each pair of credit-payment
         int sleepTime = 5000;
-        boolean found = false;
-
+        boolean found;
         Person credClient, payClient;
         Currency credCurr, payCurr;
         Float cred, pay;
+
         while (true) {
             if(clientRecords.count() > 0){
                 for (ConsumerRecord<Long, String> record : clientRecords) {
@@ -118,13 +121,16 @@ public class Clients {
                     //Which contains all the relevant data
                     Person client = gson.fromJson(json.get("payload").toString(), Person.class);
 
+                    //Check if client is already in the pool
                     found = false;
                     for (Person clnt:
                          clients) {
                         if(clnt.getId() == client.getId()){
                             found = true;
+                            break;
                         }
                     }
+
                     //If client is not already in the pool
                     if (!found) {
                         //Add client to the pool
@@ -144,19 +150,23 @@ public class Clients {
                     //Which contains all the relevant data
                     JSONObject jsonObject = new JSONObject(json.get("payload").toString());
 
+                    //Set currency exchange rate manually because there was a bug
                     Currency currency = gson.fromJson(json.get("payload").toString(), Currency.class);
+                    //where gson was rounding the exchange to 0 or 1
                     currency.setExchangeRate(Float.parseFloat(jsonObject.get("exchangerate").toString()));
 
+                    //Check if currency is already in the pool
                     found = false;
                     for (Currency crr:
                             currencies) {
                         if(crr.getId() == currency.getId()){
                             found = true;
+                            break;
                         }
                     }
-                    //If client is not already in the pool
+                    //If currency is not already in the pool
                     if (!found) {
-                        //Add client to the pool
+                        //Add currency to the pool
                         currencies.add(currency);
                         System.out.println("Added currency: " + currency.getName() + " with exchange rate " + currency.getExchangeRate());
                     }
@@ -175,13 +185,14 @@ public class Clients {
             //Choose random currency
             credCurr = currencies.get(rand.nextInt(currencies.size()));
 
+            //Create json with all the relevant information
             String credInfo = new JSONObject().put("value", cred)
                     .put("currencyName", credCurr.getName())
                     .put("currencyExchangeRate", credCurr.getExchangeRate())
                     .toString();
 
             //Produce to credit topic
-            producer.send(new ProducerRecord<Long, String>(cTopic, (long) credClient.getId(), credInfo));
+            producer.send(new ProducerRecord<>(cTopic, (long) credClient.getId(), credInfo));
             System.out.println("Client " + credClient.getId() + " made a credit of " + cred + " " + credCurr.getName() + ".");
 
             //Produce random pay
@@ -193,13 +204,14 @@ public class Clients {
             //Choose
             payCurr = currencies.get(rand.nextInt(currencies.size()));
 
+            //Create the json with all the relevant information
             String payInfo = new JSONObject().put("value", pay)
                     .put("currencyName", payCurr.getName())
                     .put("currencyExchangeRate", payCurr.getExchangeRate())
                     .toString();
 
             //Produce to payments topic
-            producer.send(new ProducerRecord<Long, String>(pTopic, (long) payClient.getId(), payInfo));
+            producer.send(new ProducerRecord<>(pTopic, (long) payClient.getId(), payInfo));
             System.out.println("Client " + payClient.getId() + " made a payment of " + pay + " " + payCurr.getName() + ".");
 
             //Fetch all data from the DBInfoTopics
@@ -208,6 +220,7 @@ public class Clients {
             clientRecords = dbClients.poll(dClients);
             System.out.println(clientRecords.count() + " records found.");
 
+            //Check the topic for new records
             System.out.println("Checking for new currencies records on topic " + dbCurrenciesTopic);
             dCurrencies = Duration.ofMillis(250);
             currencyRecords = dbCurrencies.poll(dCurrencies);

@@ -14,49 +14,64 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Properties;
 
-
+//Streams application
 public class Streams {
+    //Aggregator operation
+    public static String addToAggregator(String newValue, String aggValue) {
+        //Aggregate key can be ignored because is always 1 as there is only one item at a time
 
-    private static double negBalance = 99999999d;
-    private static Long negId = 0l;
-
-    public static String addToAggregator(Long aggKey, String newValue, String aggValue) {
+        //Get from the new string value the client and balance
         long newClientId = Long.parseLong(newValue.split(",")[0]);
         double newBalance = Double.parseDouble(newValue.split(",")[1]);
 
+        //aggValue has the last highest debt (most negative balance) and the correspondent client
         long oldClientId = Long.parseLong(aggValue.split(",")[0]);
         double oldBalance = Double.parseDouble(aggValue.split(",")[1]);
 
+        //If the client with the highest debt remains the same but the balance has changed
         if (newClientId == oldClientId && newBalance > oldBalance) {
+            //Update it
             return (newClientId) + "," + (newBalance);
         }
+
+        //Debt is only if balance is negative
         if (newBalance < 0) {
-            //System.out.println("Old balance" + oldBalance + " with Id " + oldClientId);
+            //If the new balance is more negative than the old balance
             if (newBalance < oldBalance) {
-                // System.out.println("New balance" + newBalance + " with Id " + newClientId);
+                //Update it
                 return (newClientId) + "," + (newBalance);
             }
         }
+
+        //Otherwise, keep the old values
         return (oldClientId) + "," + (oldBalance);
     }
 
+    //Convert a given currency to euros
     public static Double convertCurrency(String jsonString) {
 
-        JSONObject json = null;
+        //Initialize json object
+        JSONObject json;
 
         try {
+            //Convert string from clients to json object
             json = new JSONObject(jsonString);
 
+            //From object get
+            //Value (the actual amount of the credit/payment)
             double value = Double.parseDouble(json.get("value").toString());
+            //Exchange rate from the credit/payment currency to euros
             double exchangeRate = Double.parseDouble(json.get("currencyExchangeRate").toString());
-            double valEuros = value * exchangeRate;
+            //The object also has the currency name which is unused
 
-            return valEuros;
+            //Return value times the exchange rate to get value in euros
+            return value * exchangeRate;
         } catch (JSONException e) {
             e.printStackTrace();
+            System.out.println("\nSomething went wrong while converting to json!");
+            //Something went wrong, return -1, so it can be debugged
+            return -1d;
         }
-
-        return null;
     }
 
     public static Long extractManagerId(String jsonString) {
@@ -83,11 +98,12 @@ public class Streams {
         return null;
     }
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) {
+
         //Set topics names
         String cTopic = "Credits";
         String pTopic = "Payments";
-        String windowedCreditPerClientTopic = "windowedCreditPerClient";
+        String windowedCreditPerClientTopic = "windowedcreditperclient";
         String paymentsPerClientTopic = "paymentsperclient";
         String creditsPerClientTopic = "creditsperclient";
         String balancePerClientTopic = "balanceperclient";
@@ -110,14 +126,11 @@ public class Streams {
         KStream<Long, String> creditsStream = builder.stream(cTopic);
         KStream<Long, String> paymentsStream = builder.stream(pTopic);
 
-
-        System.out.println("Topics subscribed...");
-
         //---Credit per Client
         KTable<Long, Double> creditsPerClient = creditsStream
-                .mapValues((v) -> convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsperclient"));
+                .reduce(Double::sum, Materialized.as("creditsperclient"));
         creditsPerClient
                 .mapValues((k, v) ->
                         "{" +
@@ -149,9 +162,9 @@ public class Streams {
 
         //---Payments Per Client
         KTable<Long, Double> paymentsPerClient = paymentsStream
-                .mapValues((v) -> convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("paymentsPerClient"));
+                .reduce(Double::sum, Materialized.as("paymentsPerClient"));
         paymentsPerClient
                 .mapValues((k, v) ->
                         "{" +
@@ -217,9 +230,9 @@ public class Streams {
 
         //---Sum every credit
         KTable<String, Double> dbCreditsTable = creditsStream
-                .mapValues((v) -> convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .groupBy((k, v) -> "allCredits", Grouped.with(Serdes.String(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregateCredits"));
+                .reduce(Double::sum, Materialized.as("aggregateCredits"));
         dbCreditsTable
                 .mapValues((k, v) ->
                         "{" +
@@ -252,9 +265,9 @@ public class Streams {
 
         //---Sum every payment
         KTable<String, Double> dbPaymentsTable = paymentsStream
-                .mapValues((v) -> convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .groupBy((k, v) -> "allPayments", Grouped.with(Serdes.String(), Serdes.Double()))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("aggregatePayments"));
+                .reduce(Double::sum, Materialized.as("aggregatePayments"));
         dbPaymentsTable
                 .mapValues((k, v) ->
                         "{" +
@@ -286,19 +299,15 @@ public class Streams {
 
         //---Sum every balance
         KStream<Long, Double> allActionsStream = builder.stream("allActions", Consumed.with(Serdes.Long(), Serdes.Double()));
-
         paymentsStream
-                .mapValues((v) -> convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
-
         creditsStream
-                .mapValues((v) -> -convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .to("allActions", Produced.with(Serdes.Long(), Serdes.Double()));
-
         KTable<String, Double> dbBalancesTable = allActionsStream.
                 groupBy((k, v) -> "allBalances", Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce(Double::sum, Materialized.as("aggregateBalances"));
-
         dbBalancesTable
                 .mapValues((k, v) ->
                         "{" +
@@ -331,12 +340,12 @@ public class Streams {
         //---Total credit per client for the last month (tumbling window)
         Duration interval = Duration.ofDays(30);
         KTable<Windowed<Long>, Double> creditsPerClientMonthly = creditsStream
-                .mapValues((v) -> convertCurrency(v))
+                .mapValues(Streams::convertCurrency)
                 .groupByKey(Grouped.with(Serdes.Long(), Serdes.Double()))
                 .windowedBy(TimeWindows.of(interval))
-                .reduce((v1, v2) -> v1 + v2, Materialized.as("creditsPerClientMonthly"));
+                .reduce(Double::sum, Materialized.as("creditsPerClientMonthly"));
         creditsPerClientMonthly
-                .toStream((wk, v) -> wk.key()).map((k, v) -> new KeyValue<>(k, v))
+                .toStream((wk, v) -> wk.key()).map(KeyValue::new)
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
@@ -371,14 +380,13 @@ public class Streams {
         //---Get the client with most negative balance
         joined
                 .toStream()
-                .map((k, v) -> new KeyValue<Long, String>(1L, k + "," + v))
+                .map((k, v) -> new KeyValue<>(1L, k + "," + v))
                 .groupByKey()
                 .aggregate(
                         () -> "0,0",
-                        (aggKey, newValue, aggValue) -> addToAggregator(aggKey, newValue, aggValue)
+                        (aggKey, newValue, aggValue) -> addToAggregator(newValue, aggValue)
                 )
                 .toStream()
-//                .mapValues(v -> v.split(",")[0])
                 .mapValues((k, v) ->
                         "{" +
                                 "\"schema\":{" +
@@ -503,12 +511,15 @@ public class Streams {
                 )
                 .to(bestRevenue, Produced.with(Serdes.Long(), Serdes.String()));
 
+        //Create streams with the previously set properties
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
+
+        //Create intermediate topic needed for sum of every balance
         ArrayList<NewTopic> topics = new ArrayList<>();
         topics.add(new NewTopic("allActions", 1, Short.parseShort("1")));
         AdminClient.create(props).createTopics(topics);
-        streams.start();
 
-        System.out.println("Reading stream from topic " + cTopic);
+        //Start streaming
+        streams.start();
     }
 }

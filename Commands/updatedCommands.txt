@@ -1,0 +1,24 @@
+#---Main ones
+#kafka dir
+cd opt/kafka_2.13-2.8.1/
+#Zookeeper
+bin/zookeeper-server-start.sh config/zookeeper.properties
+#Server
+bin/kafka-server-start.sh config/server.properties
+#DB Connectors
+bin/connect-standalone.sh config/connect-standalone.properties ../../workspace/Connectors/get-clients.properties ../../workspace/Connectors/sink-paymentsPerClients.properties ../../workspace/Connectors/get-currencies.properties ../../workspace/Connectors/sink-creditsPerClients.properties ../../workspace/Connectors/sink-balancePerClients.properties ../../workspace/Connectors/sink-windowedCreditPerClient.properties ../../workspace/Connectors/sink-totalResults.properties ../../workspace/Connectors/sink-mostDebt.properties
+
+#---Others
+#Create topic
+bin/kafka-topics.sh --create --partitions 1 --replication-factor 1 --topic test --bootstrap-server localhost:90923
+#Console consumer
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
+#Delete topic
+bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic test
+#Maven
+#generate jar with dependencies
+mvn clean compile assembly:single
+#simple jar
+mvn clean package
+#Java
+java -jar executable.jar

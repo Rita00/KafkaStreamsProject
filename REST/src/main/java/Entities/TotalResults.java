@@ -3,6 +3,7 @@ package Entities;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+@SuppressWarnings("unused")
 @Entity
 public class TotalResults {
     @Id
