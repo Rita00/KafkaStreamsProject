@@ -325,7 +325,7 @@ public class AdminCLI {
 
                     String[] listCurrenciesOptions = {"List of currencies: "};
 
-                    printMenu("header", listCurrenciesOptions);
+                    printMenu("List Currencies Menu", listCurrenciesOptions);
 
                     if (allCurrencies.isEmpty()) {
                         System.out.println("Press enter continue...");
@@ -346,7 +346,7 @@ public class AdminCLI {
 
                     String[] listCreditsPerClientOptions = {"List of credits per client: "};
 
-                    printMenu("header", listCreditsPerClientOptions);
+                    printMenu("Credits Menu", listCreditsPerClientOptions);
 
                     if (allCreditsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no credits\nPress enter continue...");
@@ -368,7 +368,7 @@ public class AdminCLI {
 
                     String[] listPaymentsPerClientOptions = {"List of payments per client: "};
 
-                    printMenu("header", listPaymentsPerClientOptions);
+                    printMenu("Payments Menu", listPaymentsPerClientOptions);
                     if (allPaymentsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
@@ -388,7 +388,7 @@ public class AdminCLI {
 
                     String[] listBalancesPerClientOptions = {"List of balances per client: "};
 
-                    printMenu("header", listBalancesPerClientOptions);
+                    printMenu("Balances Menu", listBalancesPerClientOptions);
                     if (allBalancesPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
@@ -406,9 +406,9 @@ public class AdminCLI {
 
                     Double totalCredits = allCredits.readEntity(Double.class);
 
-                    String[] TotalCreditsInfo = {"List of balances per client: "};
+                    String[] TotalCreditsInfo = {""};
 
-                    printMenu("header", TotalCreditsInfo);
+                    printMenu("Total Credits Menu", TotalCreditsInfo);
 
                     if (totalCredits == 0) {
                         System.out.println("Something went wrong there are no total credits\nPress enter continue...");
@@ -425,9 +425,9 @@ public class AdminCLI {
 
                     Double totalPayments = allPayments.readEntity(Double.class);
 
-                    String[] TotalPaymentsInfo = {"List of balances per client: "};
+                    String[] TotalPaymentsInfo = {""};
 
-                    printMenu("header", TotalPaymentsInfo);
+                    printMenu("Total Payments Menu", TotalPaymentsInfo);
 
                     if (totalPayments == 0) {
                         System.out.println("Something went wrong there are no total payments\nPress enter continue...");
@@ -444,9 +444,9 @@ public class AdminCLI {
 
                     Double totalBalances = allBalances.readEntity(Double.class);
 
-                    String[] TotalBalancesInfo = {"List of balances per client: "};
+                    String[] TotalBalancesInfo = {""};
 
-                    printMenu("header", TotalBalancesInfo);
+                    printMenu("Total Balance Menu", TotalBalancesInfo);
 
                     if (totalBalances == 0) {
                         System.out.println("Something went wrong there are no total balances\nPress enter continue...");
@@ -458,25 +458,23 @@ public class AdminCLI {
                     }
                     break;
                 case 13:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
-                    Response balancesPerClient = clientTarget.request().get();
+                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/billPerClient");
+                    Response billPerClient = clientTarget.request().get();
 
-                    Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<>() {});
-                    String[] listBalancesPerClientOptions = {"List of balances per client: "};
+                    Map<Long, Double> allBillsPerClient = billPerClient.readEntity(new GenericType<>() {});
+                    String[] listBillPerClientOptions = {"List of bills per client for the last month: "};
 
-                    printMenu("header", listBalancesPerClientOptions);
-                    if (allBalancesPerClient.isEmpty()) {
+                    printMenu("Bills Menu", listBillPerClientOptions);
+                    if (allBillsPerClient.isEmpty()) {
                         System.out.println("Something went wrong there are no payments\nPress enter continue...");
                         System.in.read();
                     } else {
-                        for (Map.Entry<String, Float> mngrNm : allBalancesPerClient.entrySet()) {
+                        for (Map.Entry<Long, Double> mngrNm : allBillsPerClient.entrySet()) {
                             System.out.println(mngrNm.getKey() + " - " + mngrNm.getValue());
                         }
                         System.out.println("Press enter continue...");
                         System.in.read();
                     }
-
-
                     break;
                 case 14:
                     System.out.println("To-Do option 14");
