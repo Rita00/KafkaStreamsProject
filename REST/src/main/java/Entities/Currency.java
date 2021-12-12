@@ -2,6 +2,7 @@ package Entities;
 
 import javax.persistence.*;
 
+@SuppressWarnings("unused")
 @Entity
 public class Currency {
     @Id

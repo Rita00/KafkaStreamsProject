@@ -3,6 +3,7 @@ package Entities;
 import javax.persistence.*;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Entity
 public class Manager {
     @Id
