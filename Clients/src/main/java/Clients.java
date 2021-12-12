@@ -105,7 +105,7 @@ public class Clients {
 
         //Initialize all necessary variables
         //sleepTime is the amount of time that separates each pair of credit-payment
-        int sleepTime = 10000;
+        int sleepTime = 5000;
         boolean found;
         Person credClient, payClient;
         Currency credCurr, payCurr;
