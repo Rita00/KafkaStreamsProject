@@ -1,1 +1,4 @@
 /adminCLI/.idea/
+vendor/
+run/
+*/target/
