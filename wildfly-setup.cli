@@ -1,0 +1,7 @@
+# Run once by build.sh against a fresh WildFly: the PostgreSQL driver and the
+# java:/PostgresDS datasource from docker-dir/configure.cli, pointing at the demo database.
+embed-server --server-config=standalone.xml
+module add --name=org.postgresql --resources=${driver.jar} --dependencies=javax.api,javax.transaction.api
+/subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql,driver-module-name=org.postgresql,driver-class-name=org.postgresql.Driver)
+data-source add --name=PostgresDS --jndi-name=java:/PostgresDS --driver-name=postgresql --connection-url=jdbc:postgresql://127.0.0.1:5435/school --user-name=postgres --password=My01pass
+stop-embedded-server

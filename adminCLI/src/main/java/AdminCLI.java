@@ -10,6 +10,9 @@ import java.util.*;
 
 @SuppressWarnings({"DuplicatedCode", "ResultOfMethodCallIgnored", "IfStatementWithIdenticalBranches"})
 public class AdminCLI {
+    // archive revival: one base URL instead of a copy in every call; REST_URL overrides the Docker default
+    static final String REST = System.getenv().getOrDefault("REST_URL", "http://host.docker.internal:8080/restws/rest/RestOperations");
+
 
     public static void printMenu(String menuHeader, String[] menuOptions, boolean isMessage, String input) {
         //Clear screen
@@ -89,7 +92,7 @@ public class AdminCLI {
             switch (opt) {
                 case 1:
                     //Set target trough rest link
-                    managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/addManager");
+                    managerTarget = restClient.target(REST + "/addManager");
 
                     //To add manager only the name is needed
                     String[] addManagerOptions = {
@@ -139,9 +142,9 @@ public class AdminCLI {
                     break;
                 case 2:
                     //Get clients
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/addClients");
+                    clientTarget = restClient.target(REST + "/addClients");
                     //Get mangers
-                    managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
+                    managerTarget = restClient.target(REST + "/listManagers");
 
                     Response addClientResponseManagers = managerTarget.request().get();
                     Map<Integer, String> managerNames = addClientResponseManagers.readEntity(new GenericType<>() {
@@ -234,7 +237,7 @@ public class AdminCLI {
                     break;
 
                 case 3:
-                    currencyTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/addCurrency");
+                    currencyTarget = restClient.target(REST + "/addCurrency");
 
                     HashMap<String, Object> currencyProp = new HashMap<>();
 
@@ -292,7 +295,7 @@ public class AdminCLI {
                     }
                     break;
                 case 4:
-                    managerTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listManagers");
+                    managerTarget = restClient.target(REST + "/listManagers");
                     Response managersResponse = managerTarget.request().get();
 
                     Map<Integer, String> allManagers = managersResponse.readEntity(new GenericType<>() {
@@ -315,7 +318,7 @@ public class AdminCLI {
                     }
                     break;
                 case 5:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClients");
+                    clientTarget = restClient.target(REST + "/listClients");
                     Response clients = clientTarget.request().get();
 
                     Map<Integer, String> allClients = clients.readEntity(new GenericType<>() {
@@ -338,7 +341,7 @@ public class AdminCLI {
                     }
                     break;
                 case 6:
-                    currencyTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCurrencies");
+                    currencyTarget = restClient.target(REST + "/listCurrencies");
                     Response currencies = currencyTarget.request().get();
 
                     Map<String, Double> allCurrencies = currencies.readEntity(new GenericType<>() {
@@ -360,7 +363,7 @@ public class AdminCLI {
                     }
                     break;
                 case 7:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listCreditPerClient");
+                    clientTarget = restClient.target(REST + "/listCreditPerClient");
                     Response creditsPerClient = clientTarget.request().get();
 
                     Map<String, Float> allCreditsPerClient = creditsPerClient.readEntity(new GenericType<>() {
@@ -383,7 +386,7 @@ public class AdminCLI {
                     }
                     break;
                 case 8:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listPaymentsPerClient");
+                    clientTarget = restClient.target(REST + "/listPaymentsPerClient");
                     Response paymentsPerClient = clientTarget.request().get();
 
                     Map<String, Float> allPaymentsPerClient = paymentsPerClient.readEntity(new GenericType<>() {
@@ -404,7 +407,7 @@ public class AdminCLI {
                     }
                     break;
                 case 9:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listBalancesPerClient");
+                    clientTarget = restClient.target(REST + "/listBalancesPerClient");
                     Response balancesPerClient = clientTarget.request().get();
 
                     Map<String, Float> allBalancesPerClient = balancesPerClient.readEntity(new GenericType<>() {
@@ -425,7 +428,7 @@ public class AdminCLI {
                     }
                     break;
                 case 10:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalCredits");
+                    clientTarget = restClient.target(REST + "/listTotalCredits");
                     Response allCredits = clientTarget.request().get();
 
                     Double totalCredits = allCredits.readEntity(Double.class);
@@ -444,7 +447,7 @@ public class AdminCLI {
                     }
                     break;
                 case 11:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalPayments");
+                    clientTarget = restClient.target(REST + "/listTotalPayments");
                     Response allPayments = clientTarget.request().get();
 
                     Double totalPayments = allPayments.readEntity(Double.class);
@@ -463,7 +466,7 @@ public class AdminCLI {
                     }
                     break;
                 case 12:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listTotalBalances");
+                    clientTarget = restClient.target(REST + "/listTotalBalances");
                     Response allBalances = clientTarget.request().get();
 
                     Double totalBalances = allBalances.readEntity(Double.class);
@@ -482,7 +485,7 @@ public class AdminCLI {
                     }
                     break;
                 case 13:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/billPerClient");
+                    clientTarget = restClient.target(REST + "/billPerClient");
                     Response billPerClient = clientTarget.request().get();
 
                     Map<Long, Double> allBillsPerClient = billPerClient.readEntity(new GenericType<>() {
@@ -504,7 +507,7 @@ public class AdminCLI {
                     }
                     break;
                 case 14:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/getNoPayers");
+                    clientTarget = restClient.target(REST + "/getNoPayers");
                     Response clientInfoNoPay = clientTarget.request().get();
 
                     Map<String, Object> clientInfoNoPayMap = clientInfoNoPay.readEntity(new GenericType<>() {
@@ -527,7 +530,7 @@ public class AdminCLI {
                     }
                     break;
                 case 15:
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/listClientHighestDebt");
+                    clientTarget = restClient.target(REST + "/listClientHighestDebt");
                     Response clientId = clientTarget.request().get();
 
                     Map<String, Object> clientInfo = clientId.readEntity(new GenericType<>() {
@@ -549,7 +552,7 @@ public class AdminCLI {
                     break;
                 case 16:
 
-                    clientTarget = restClient.target("http://host.docker.internal:8080/restws/rest/RestOperations/getBestRevenue");
+                    clientTarget = restClient.target(REST + "/getBestRevenue");
                     Response managerId = clientTarget.request().get();
 
                     Map<String, Object> managerInfo = managerId.readEntity(new GenericType<>() {
